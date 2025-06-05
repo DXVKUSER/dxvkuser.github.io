@@ -10,6 +10,7 @@
       --secondary-color: #00ffcc;
       --background-dark: #1e1e1e;
       --text-light: #ffffff;
+      --install-text-color: #e0e0e0;
     }
 
     body {
@@ -18,55 +19,68 @@
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
-      background-attachment: fixed; /* Fixa a imagem de fundo */
+      background-attachment: fixed;
       color: var(--text-light);
       margin: 0;
       padding: 0;
       display: flex;
-      flex-direction: column; /* Para alinhar o container e o áudio */
-      align-items: center;
-      min-height: 100vh; /* Garante que o body ocupe a altura total da viewport */
+      flex-direction: column;
+      align-items: center; /* Centraliza horizontalmente o container e o áudio */
+      min-height: 100vh;
       justify-content: center; /* Centraliza verticalmente o conteúdo na página */
     }
 
     .container {
       max-width: 700px;
-      width: 90%; /* Responsividade para telas menores */
-      margin: 30px auto; /* Reduz margem superior e inferior, mantém centralizado */
+      width: 90%;
+      margin: 30px auto;
       background-color: var(--background-dark);
       border-radius: 12px;
       padding: 30px;
       box-shadow: 0 0 20px rgba(0,0,0,0.5);
-      text-align: center; /* Centraliza o texto dentro do container */
+      /* O text-align: center aqui agora centraliza todo o texto por padrão */
+      text-align: center;
     }
 
     h1 {
       color: var(--primary-color);
-      margin-bottom: 25px; /* Espaçamento após o título */
+      margin-bottom: 25px;
+      /* h1 já será centralizado pelo container */
     }
 
-    p {
-      font-size: 1.1em;
+    .install-intro, p { /* Aplica o mesmo estilo para a introdução e o parágrafo de pix */
+      font-size: 1.05em; /* Ligeiramente menor para a introdução */
       line-height: 1.6em;
-      margin-top: 20px;
-      text-align: left; /* Garante que parágrafos não fiquem centralizados */
+      margin-bottom: 30px;
+      color: var(--install-text-color);
+      /* Remove text-align: left para que herde o center do container */
+      /* Se precisar de alinhamento à esquerda em p, especifique novamente nele */
+    }
+
+    .install-intro strong {
+        color: var(--primary-color);
     }
 
     .download-list {
-      list-style: none; /* Remove os marcadores de lista padrão */
+      list-style: none;
       padding: 0;
       margin-top: 30px;
+      /* Certifica-se de que a lista também está centralizada */
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* Centraliza os itens da lista */
     }
 
     .download-list li {
-      margin-bottom: 15px; /* Espaçamento entre os itens da lista */
+      margin-bottom: 15px;
       display: flex;
       align-items: center;
-      justify-content: center; /* Centraliza horizontalmente os itens da lista */
+      justify-content: center; /* Centraliza cada item da lista */
+      width: 100%; /* Garante que o item ocupe a largura para centralizar o conteúdo dentro dele */
     }
 
     .download-list img {
-      margin-right: 10px; /* Espaçamento entre a imagem e o link */
+      margin-right: 10px;
       vertical-align: middle;
     }
 
@@ -74,16 +88,17 @@
       color: var(--primary-color);
       text-decoration: none;
       font-size: 1.1em;
-      transition: color 0.3s ease; /* Transição suave para o hover */
+      transition: color 0.3s ease;
     }
 
     .download-list a:hover {
       text-decoration: underline;
-      color: var(--secondary-color); /* Muda a cor no hover */
+      color: var(--secondary-color);
     }
 
     .pix {
       margin-top: 30px;
+      /* text-align: center já está no container */
     }
 
     .pix strong {
@@ -92,15 +107,25 @@
     }
 
     audio {
-      margin-top: 40px; /* Espaçamento acima do player de áudio */
-      width: 90%; /* Garante que o player de áudio seja responsivo */
-      max-width: 400px; /* Limita a largura máxima do player */
+      margin-top: 40px;
+      width: 90%;
+      max-width: 400px;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>GIF PEG TV!</h1>
+
+    <p class="install-intro">
+      Bem-vindo ao <strong>GIF PEG TV</strong>! Siga os passos abaixo para instalar e começar a usar o addon em seu dispositivo:
+      <br><br>
+      1. Faça o download dos arquivos necessários clicando nos links abaixo.
+      <br>
+      2. Após o download, siga as instruções de instalação do seu reprodutor de mídia favorito para carregar os arquivos `.zip` como addons.
+      <br>
+      3. Certifique-se de instalar primeiramente os arquivos do <strong>f4mTester</strong>, se houver, antes do addon principal do GIF PEG TV, para garantir a compatibilidade e o funcionamento correto.
+    </p>
 
     <ul class="download-list">
       <li>
