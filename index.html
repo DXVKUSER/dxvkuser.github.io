@@ -35,7 +35,8 @@
       max-width: 700px;
       width: 90%;
       margin: 30px auto;
-      background-color: var(--background-dark);
+      /* Alterado para um cinza escuro com 70% de opacidade (0.7) */
+      background-color: rgba(30, 30, 30, 0.7); /* Ou rgba(255, 255, 255, 0.2) para branco transparente */
       border-radius: 12px;
       padding: 30px;
       box-shadow: 0 0 20px rgba(0,0,0,0.5);
@@ -47,7 +48,7 @@
       margin-bottom: 25px;
     }
 
-    .install-intro, .pix { /* Aplica o mesmo estilo para a introdução e o parágrafo de pix */
+    .install-intro, .pix {
       font-size: 1.05em;
       line-height: 1.6em;
       margin-bottom: 30px;
@@ -84,15 +85,15 @@
       color: var(--primary-color);
       text-decoration: none;
       font-size: 1.1em;
-      transition: color 0.3s ease, text-shadow 0.3s ease; /* Adicionado text-shadow na transição */
+      transition: color 0.3s ease, text-shadow 0.3s ease;
     }
 
     .download-list a:hover {
       text-decoration: underline;
-      color: var(--neon-glow-color); /* Muda a cor para um verde mais vibrante */
-      text-shadow: 0 0 5px var(--neon-glow-color), /* Brilho suave */
-                   0 0 10px var(--neon-glow-color), /* Brilho médio */
-                   0 0 15px var(--neon-glow-color); /* Brilho forte */
+      color: var(--neon-glow-color);
+      text-shadow: 0 0 5px var(--neon-glow-color),
+                   0 0 10px var(--neon-glow-color),
+                   0 0 15px var(--neon-glow-color);
     }
 
     .pix {
@@ -115,7 +116,15 @@
   <div class="container">
     <h1>GIF PEG TV!</h1>
 
-    
+    <p class="install-intro">
+      Bem-vindo ao <strong>GIF PEG TV</strong>! Siga os passos abaixo para instalar e começar a usar o addon em seu dispositivo:
+      <br><br>
+      1. Faça o download dos arquivos necessários clicando nos links abaixo.
+      <br>
+      2. Após o download, siga as instruções de instalação do seu reprodutor de mídia favorito para carregar os arquivos `.zip` como addons.
+      <br>
+      3. Certifique-se de instalar primeiramente os arquivos do <strong>f4mTester</strong>, se houver, antes do addon principal do GIF PEG TV, para garantir a compatibilidade e o funcionamento correto.
+    </p>
 
     <ul class="download-list">
       <li>
@@ -132,7 +141,7 @@
       </li>
     </ul>
 
-    <p class="pix"></p>
+    <p class="pix">Para mais informações ou suporte, entre em contato.</p>
   </div>
 
   <audio controls>
