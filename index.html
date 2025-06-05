@@ -6,11 +6,12 @@
   <title>GIF PEG ADDON</title>
   <style>
     :root {
-      --primary-color: #00FF1F;
-      --secondary-color: #00ffcc;
+      --primary-color: #00FF1F; /* Verde Limão primário */
+      --secondary-color: #00ffcc; /* Ciano/Turquesa para destaque */
       --background-dark: #1e1e1e;
       --text-light: #ffffff;
       --install-text-color: #e0e0e0;
+      --neon-glow-color: #39FF14; /* Um verde limão ainda mais vibrante para o brilho */
     }
 
     body {
@@ -25,9 +26,9 @@
       padding: 0;
       display: flex;
       flex-direction: column;
-      align-items: center; /* Centraliza horizontalmente o container e o áudio */
+      align-items: center;
       min-height: 100vh;
-      justify-content: center; /* Centraliza verticalmente o conteúdo na página */
+      justify-content: center;
     }
 
     .container {
@@ -38,23 +39,19 @@
       border-radius: 12px;
       padding: 30px;
       box-shadow: 0 0 20px rgba(0,0,0,0.5);
-      /* O text-align: center aqui agora centraliza todo o texto por padrão */
       text-align: center;
     }
 
     h1 {
       color: var(--primary-color);
       margin-bottom: 25px;
-      /* h1 já será centralizado pelo container */
     }
 
-    .install-intro, p { /* Aplica o mesmo estilo para a introdução e o parágrafo de pix */
-      font-size: 1.05em; /* Ligeiramente menor para a introdução */
+    .install-intro, .pix { /* Aplica o mesmo estilo para a introdução e o parágrafo de pix */
+      font-size: 1.05em;
       line-height: 1.6em;
       margin-bottom: 30px;
       color: var(--install-text-color);
-      /* Remove text-align: left para que herde o center do container */
-      /* Se precisar de alinhamento à esquerda em p, especifique novamente nele */
     }
 
     .install-intro strong {
@@ -65,18 +62,17 @@
       list-style: none;
       padding: 0;
       margin-top: 30px;
-      /* Certifica-se de que a lista também está centralizada */
       display: flex;
       flex-direction: column;
-      align-items: center; /* Centraliza os itens da lista */
+      align-items: center;
     }
 
     .download-list li {
       margin-bottom: 15px;
       display: flex;
       align-items: center;
-      justify-content: center; /* Centraliza cada item da lista */
-      width: 100%; /* Garante que o item ocupe a largura para centralizar o conteúdo dentro dele */
+      justify-content: center;
+      width: 100%;
     }
 
     .download-list img {
@@ -88,17 +84,19 @@
       color: var(--primary-color);
       text-decoration: none;
       font-size: 1.1em;
-      transition: color 0.3s ease;
+      transition: color 0.3s ease, text-shadow 0.3s ease; /* Adicionado text-shadow na transição */
     }
 
     .download-list a:hover {
       text-decoration: underline;
-      color: var(--secondary-color);
+      color: var(--neon-glow-color); /* Muda a cor para um verde mais vibrante */
+      text-shadow: 0 0 5px var(--neon-glow-color), /* Brilho suave */
+                   0 0 10px var(--neon-glow-color), /* Brilho médio */
+                   0 0 15px var(--neon-glow-color); /* Brilho forte */
     }
 
     .pix {
-      margin-top: 30px;
-      /* text-align: center já está no container */
+        margin-top: 30px;
     }
 
     .pix strong {
@@ -142,7 +140,7 @@
       </li>
     </ul>
 
-    <p class="pix">Para mais informações ou suporte, entre em contato.</p>
+    <p class="pix"></p>
   </div>
 
   <audio controls>
