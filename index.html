@@ -12,7 +12,6 @@
       --text-light: #ffffff;
       --install-text-color: #e0e0e0;
       --neon-glow-color: #39FF14; /* Um verde limão ainda mais vibrante para o brilho */
-      --transparent-white: rgba(255, 255, 255, 0.2); /* Branco com 20% de opacidade */
       --transparent-dark: rgba(30, 30, 30, 0.7); /* Cor original do container com 70% de opacidade */
     }
 
@@ -31,6 +30,41 @@
       align-items: center;
       min-height: 100vh;
       justify-content: center;
+      position: relative; /* Necessário para posicionar as luzes neon */
+      overflow-x: hidden; /* Evita barra de rolagem horizontal */
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      width: 10px; /* Largura das luzes neon */
+      background-color: var(--neon-glow-color);
+      box-shadow: 0 0 20px var(--neon-glow-color),
+                  0 0 40px var(--neon-glow-color),
+                  0 0 60px var(--neon-glow-color);
+      opacity: 0.7; /* Opacidade inicial */
+      animation: neon-blink 1s infinite alternate; /* Animação de piscar */
+      z-index: -1; /* Garante que fiquem atrás do conteúdo principal */
+    }
+
+    body::before {
+      left: 0;
+    }
+
+    body::after {
+      right: 0;
+    }
+
+    @keyframes neon-blink {
+      from {
+        opacity: 0.7;
+      }
+      to {
+        opacity: 0.3;
+      }
     }
 
     .container, .instructions-container {
@@ -41,12 +75,11 @@
       padding: 30px;
       box-shadow: 0 0 20px rgba(0,0,0,0.5);
       text-align: center;
-      /* Ambos os contêineres usam a mesma transparência escura */
-      background-color: var(--transparent-dark); 
+      background-color: var(--transparent-dark);
     }
 
     .instructions-container {
-        text-align: left; /* Mantém o alinhamento do texto das instruções à esquerda */
+        text-align: left;
     }
 
     h1 {
@@ -166,7 +199,7 @@
       <br>
       3. Selecione Adicionar fonte.
       <br>
-      4. Clique em Nenhum e digite: https://gifpegtv.github.io</a>
+      4. Clique em Nenhum e digite: <a href="https://gifpegtv.github.io">https://gifpegtv.github.io</a>
       <br>
       5. Dê um nome à fonte (por exemplo: gifpegtv).
       <br>
