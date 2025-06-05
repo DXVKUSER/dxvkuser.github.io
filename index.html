@@ -12,6 +12,8 @@
       --text-light: #ffffff;
       --install-text-color: #e0e0e0;
       --neon-glow-color: #39FF14; /* Um verde limão ainda mais vibrante para o brilho */
+      --transparent-white: rgba(255, 255, 255, 0.2); /* Branco com 20% de opacidade */
+      --transparent-dark: rgba(30, 30, 30, 0.7); /* Cor original do container com 70% de opacidade */
     }
 
     body {
@@ -31,16 +33,24 @@
       justify-content: center;
     }
 
-    .container {
+    .container, .instructions-container { /* Aplica estilos comuns a ambos os containers */
       max-width: 700px;
       width: 90%;
-      margin: 30px auto;
-      /* Alterado para um cinza escuro com 70% de opacidade (0.7) */
-      background-color: rgba(30, 30, 30, 0.7); /* Ou rgba(255, 255, 255, 0.2) para branco transparente */
+      margin: 20px auto; /* Reduz margem para criar espaço entre os containers */
       border-radius: 12px;
       padding: 30px;
       box-shadow: 0 0 20px rgba(0,0,0,0.5);
       text-align: center;
+    }
+
+    .container {
+      background-color: var(--transparent-dark); /* Mantém o escuro transparente */
+    }
+
+    .instructions-container {
+      background-color: var(--transparent-white); /* Usa o branco transparente */
+      margin-top: 20px; /* Garante espaçamento entre os containers */
+      text-align: left; /* Alinha o texto das instruções à esquerda */
     }
 
     h1 {
@@ -105,6 +115,25 @@
       color: var(--secondary-color);
     }
 
+    /* Estilo para o texto dentro do segundo container */
+    .instructions-container p {
+        font-size: 1.1em;
+        line-height: 1.6em;
+        color: var(--text-light); /* Garante que o texto seja legível no fundo transparente */
+        margin-bottom: 15px;
+    }
+
+    .instructions-container a {
+        color: var(--primary-color);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .instructions-container a:hover {
+        text-decoration: underline;
+        color: var(--neon-glow-color);
+    }
+
     audio {
       margin-top: 40px;
       width: 90%;
@@ -116,7 +145,7 @@
   <div class="container">
     <h1>GIF PEG TV</h1>
 
-   
+    
 
     <ul class="download-list">
       <li>
@@ -133,7 +162,27 @@
       </li>
     </ul>
 
-    
+    <p class="pix">Para mais informações ou suporte, entre em contato.</p>
+  </div>
+
+  <div class="instructions-container">
+    <p>
+      <b>Instruções para a adição no gestor de arquivo:</b>
+      <br><br>
+      1. Abra o Kodi e vá até Configurações (ícone de engrenagem).
+      <br>
+      2. Clique em Gestor de Arquivos.
+      <br>
+      3. Selecione Adicionar fonte.
+      <br>
+      4. Clique em Nenhum e digite: <a href="https://gifpegtv.github.io">https://gifpegtv.github.io</a>
+      <br>
+      5. Dê um nome à fonte (por exemplo: gifpegtv).
+      <br>
+      6. Clique em OK e volte à tela inicial.
+      <br>
+      7. Clique no ícone de Instalar a partir de um arquivo .zip, depois selecione a fonte que você acabou de adicionar (gifpegtv).
+    </p>
   </div>
 
   <audio controls>
