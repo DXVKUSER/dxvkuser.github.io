@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baixar Lista IPTV 3</title>
+    <title>Baixar Lista IPTV Filtrada 4</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -82,20 +82,20 @@
 <body>
 
 <div class="container">
-    <h1>Baixar Lista M3U Completa</h1>
-    <p>Insira o URL da sua lista IPTV e clique em "Gerar Link" para baixar o arquivo completo.</p>
+    <h1>Baixar Lista M3U Filtrada</h1>
+    <p>Insira o URL da sua lista IPTV e clique em "Gerar Arquivo" para baixar a lista completa, filtrada para canais .m3u8.</p>
     <div class="input-group">
         <input type="text" id="m3u-url" placeholder="Cole o URL da sua lista M3U aqui...">
-        <button onclick="generateDownloadLink()">Gerar Link</button>
+        <button onclick="generateFilteredFile()">Gerar Arquivo</button>
     </div>
     <div id="status"></div>
     <div id="download-container">
-        <a id="download-link">Baixar Lista Completa</a>
+        <a id="download-link">Baixar Lista Filtrada</a>
     </div>
 </div>
 
 <script>
-    function generateDownloadLink() {
+    async function generateFilteredFile() {
         const m3uUrl = document.getElementById('m3u-url').value;
         const statusDiv = document.getElementById('status');
         const downloadLink = document.getElementById('download-link');
@@ -106,26 +106,55 @@
             return;
         }
 
-        // A lógica do proxy para contornar o CORS ainda é necessária aqui
-        // pois a página precisa acessar a URL original para criar o link de download
-        // que, quando clicado, baixará o arquivo M3U diretamente.
-        // No entanto, para o download direto, o link do arquivo precisa ser a URL original,
-        // não a URL do proxy.
-        downloadLink.href = m3uUrl;
+        statusDiv.textContent = 'Carregando e filtrando a lista...';
+        downloadLink.style.display = 'none';
 
-        // O nome do arquivo será o nome da lista ou um nome padrão
-        let filename = 'lista_iptv.m3u';
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(m3uUrl)}`;
+        
+        const headers = new Headers();
+        headers.append('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36');
+        headers.append('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9');
+        headers.append('Accept-Language', 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7');
+
         try {
-            const url = new URL(m3uUrl);
-            const pathSegments = url.pathname.split('/');
-            filename = pathSegments[pathSegments.length - 1] || 'lista_iptv.m3u';
-        } catch (e) {
-            // Se a URL for inválida, usa o nome padrão
-        }
-        downloadLink.download = filename;
+            const response = await fetch(proxyUrl, { headers: headers });
+            if (!response.ok) {
+                throw new Error(`Erro ao carregar a lista: ${response.statusText}`);
+            }
 
-        statusDiv.textContent = 'Link de download gerado com sucesso!';
-        downloadLink.style.display = 'inline-block';
+            const m3uText = await response.text();
+            
+            let filteredM3UContent = '#EXTM3U\n';
+            const channelRegex = /(#EXTINF:.*,(.*?)\n(http(?:s)?:\/\/[^\s,]+\.m3u8))/g;
+            let match;
+            let count = 0;
+
+            while ((match = channelRegex.exec(m3uText)) !== null) {
+                // O match[1] contém a linha #EXTINF e o URL completo
+                filteredM3UContent += match[1] + '\n';
+                count++;
+            }
+
+            if (count > 0) {
+                // Cria um objeto Blob com o conteúdo filtrado
+                const blob = new Blob([filteredM3UContent], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+
+                // Configura o link de download
+                downloadLink.href = url;
+                downloadLink.download = 'lista_filtrada.m3u';
+                downloadLink.textContent = `Baixar Lista Filtrada (${count} canais)`;
+                downloadLink.style.display = 'inline-block';
+                
+                statusDiv.textContent = 'Arquivo filtrado pronto para download!';
+            } else {
+                statusDiv.textContent = 'Nenhum canal ao vivo (.m3u8) foi encontrado na lista.';
+            }
+
+        } catch (error) {
+            statusDiv.textContent = `Erro: ${error.message}. Verifique o URL ou a disponibilidade do proxy.`;
+            console.error('Erro:', error);
+        }
     }
 </script>
 
