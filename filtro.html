@@ -1,178 +1,193 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IPTV Channel Filter</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-      background-color: #f4f4f4;
-    }
-    h1 {
-      text-align: center;
-      color: #333;
-    }
-    .input-container {
-      margin-bottom: 20px;
-    }
-    input[type="text"] {
-      width: 100%;
-      padding: 10px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      margin-bottom: 10px;
-    }
-    button {
-      padding: 10px 20px;
-      background-color: #007BFF;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    #output {
-      margin-top: 20px;
-      background: white;
-      padding: 15px;
-      border-radius: 4px;
-      border: 1px solid #ddd;
-    }
-    #output ul {
-      list-style: none;
-      padding: 0;
-    }
-    #output li {
-      padding: 5px 0;
-    }
-    #output a {
-      color: #007BFF;
-      text-decoration: none;
-    }
-    #output a:hover {
-      text-decoration: underline;
-    }
-    .error {
-      color: red;
-      margin-top: 10px;
-    }
-    .info {
-      color: #555;
-      font-size: 14px;
-      margin-top: 10px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador de IPTV</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            color: #4CAF50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .input-group {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        #m3u-url {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 4px 0 0 4px;
+            background-color: #2e2e2e;
+            color: #e0e0e0;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 15px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            border-radius: 0 4px 4px 0;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #status {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #f44336;
+        }
+        #channel-list {
+            list-style: none;
+            padding: 0;
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #333;
+            border-radius: 4px;
+            background-color: #2e2e2e;
+        }
+        .channel-item {
+            padding: 10px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .channel-item:last-child {
+            border-bottom: none;
+        }
+        .channel-item a {
+            color: #90caf9;
+            text-decoration: none;
+            display: block;
+            font-size: 16px;
+            transition: color 0.3s ease;
+            flex-grow: 1;
+            margin-right: 10px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .channel-item a:hover {
+            color: #64b5f6;
+        }
+        .download-button {
+            background-color: #555;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .download-button:hover {
+            background-color: #777;
+        }
+    </style>
 </head>
 <body>
-  <h1>IPTV Channel Filter (.m3u8)</h1>
-  <div class="input-container">
-    <input type="text" id="iptvUrl" placeholder="Enter IPTV URL (e.g., http://khx88.com/get.php?...)">
-    <input type="text" id="proxyUrl" placeholder="Optional: Enter custom CORS proxy URL (e.g., https://your-proxy.com/)">
-    <button onclick="filterChannels()">Filter Channels</button>
-  </div>
-  <div id="output">
-    <p class="info">Note: To avoid CORS issues, host this page on a web server (e.g., using 'http-server' or 'python -m http.server'). Test the IPTV URL in VLC or with 'curl' to ensure it’s valid. If needed, provide a custom CORS proxy URL or use a server-side script.</p>
-  </div>
 
-  <script>
-    async function filterChannels() {
-      const url = document.getElementById('iptvUrl').value.trim();
-      const proxyUrl = document.getElementById('proxyUrl').value.trim();
-      const outputDiv = document.getElementById('output');
-      outputDiv.innerHTML = '';
+<div class="container">
+    <h1>Visualizador de IPTV</h1>
+    <div class="input-group">
+        <input type="text" id="m3u-url" placeholder="Cole o URL da sua lista M3U aqui...">
+        <button onclick="loadM3U()">Carregar e Filtrar</button>
+    </div>
+    <div id="status"></div>
+    <ul id="channel-list">
+        </ul>
+</div>
 
-      // Validate URL
-      if (!url) {
-        outputDiv.innerHTML = '<p class="error">Please enter a valid IPTV URL.</p>';
-        return;
-      }
-      if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        outputDiv.innerHTML = '<p class="error">IPTV URL must start with http:// or https://</p>';
-        return;
-      }
-      if (proxyUrl && !proxyUrl.startsWith('https://')) {
-        outputDiv.innerHTML = '<p class="error">Proxy URL must start with https://</p>';
-        return;
-      }
+<script>
+    async function loadM3U() {
+        const m3uUrl = document.getElementById('m3u-url').value;
+        const statusDiv = document.getElementById('status');
+        const channelList = document.getElementById('channel-list');
 
-      try {
-        // Use proxy if provided, otherwise attempt direct fetch
-        const fetchUrl = proxyUrl ? proxyUrl + url : url;
-
-        // Fetch the IPTV playlist
-        const response = await fetch(fetchUrl, {
-          method: 'GET',
-          headers: {
-            'Accept': 'text/plain'
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
+        if (!m3uUrl) {
+            statusDiv.textContent = 'Por favor, insira um URL de lista M3U.';
+            return;
         }
 
-        const text = await response.text();
+        statusDiv.textContent = 'Carregando e filtrando lista...';
+        channelList.innerHTML = ''; // Limpa a lista anterior
 
-        // Split the playlist into lines
-        const lines = text.split('\n');
-        const channels = [];
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(m3uUrl)}`;
 
-        // Parse the M3U playlist
-        let currentChannel = null;
-        for (const line of lines) {
-          if (line.startsWith('#EXTINF')) {
-            currentChannel = { info: line };
-          } else if (line.startsWith('http') && currentChannel) {
-            // Check if the link ends with .m3u8 and does not end with .mp4, .avi, or .mkv
-            if (line.toLowerCase().endsWith('.m3u8') &&
-                !line.toLowerCase().endsWith('.mp4') &&
-                !line.toLowerCase().endsWith('.avi') &&
-                !line.toLowerCase().endsWith('.mkv')) {
-              currentChannel.url = line;
-              channels.push(currentChannel);
+        try {
+            const response = await fetch(proxyUrl);
+            if (!response.ok) {
+                throw new Error(`Erro ao carregar a lista: ${response.statusText}`);
             }
-            currentChannel = null;
-          }
-        }
 
-        // Display the filtered channels
-        if (channels.length === 0) {
-          outputDiv.innerHTML = '<p class="error">No channels with .m3u8 extension found in the playlist.</p>';
-          return;
-        }
+            const m3uText = await response.text();
+            
+            // Regex corrigida para ser mais abrangente e incluir caracteres como '@'
+            const channelRegex = /#EXTINF:.*,(.*?)\n(http(?:s)?:\/\/[^\s,]+\.m3u8)/g;
+            const fragment = document.createDocumentFragment();
+            let match;
+            let count = 0;
 
-        const ul = document.createElement('ul');
-        channels.forEach(channel => {
-          const li = document.createElement('li');
-          const channelName = channel.info.match(/,(.+)$/)?.[1] || 'Unnamed Channel';
-          const a = document.createElement('a');
-          a.href = channel.url;
-          a.textContent = channelName;
-          a.target = '_blank';
-          li.appendChild(a);
-          ul.appendChild(li);
-        });
-        outputDiv.appendChild(ul);
-      } catch (error) {
-        outputDiv.innerHTML = `<p class="error">Error: ${error.message}. Possible causes and solutions:
-          <ul>
-            <li><strong>CORS restrictions</strong>: Host this page on a web server (e.g., run 'http-server' or 'python -m http.server 8000' and access http://localhost:8000/iptv_filter.html).</li>
-            <li><strong>Invalid IPTV URL</strong>: Test the URL in VLC or with 'curl -L "${url}"' to verify it returns an M3U playlist.</li>
-            <li><strong>Server down</strong>: Contact the IPTV provider to confirm the server is operational.</li>
-            <li><strong>Custom proxy</strong>: Set up a CORS proxy (e.g., https://github.com/Rob--W/cors-anywhere) and enter its URL above.</li>
-            <li><strong>Server-side fetching</strong>: Use a backend script to fetch the playlist (see documentation).</li>
-          </ul>
-        </p>`;
-      }
+            while ((match = channelRegex.exec(m3uText)) !== null) {
+                const channelName = match[1].trim();
+                const channelUrl = match[2].trim();
+                
+                const li = document.createElement('li');
+                li.classList.add('channel-item');
+
+                const channelNameLink = document.createElement('a');
+                channelNameLink.href = channelUrl;
+                channelNameLink.textContent = channelName;
+                channelNameLink.target = '_blank';
+                
+                const downloadLink = document.createElement('a');
+                downloadLink.href = channelUrl;
+                downloadLink.textContent = 'Baixar';
+                downloadLink.classList.add('download-button');
+                downloadLink.download = `${channelName}.m3u8`;
+
+                li.appendChild(channelNameLink);
+                li.appendChild(downloadLink);
+                fragment.appendChild(li);
+                count++;
+            }
+
+            if (count > 0) {
+                channelList.appendChild(fragment);
+                statusDiv.textContent = `Encontrados ${count} canais ao vivo.`;
+            } else {
+                statusDiv.textContent = 'Nenhum canal ao vivo (.m3u8) foi encontrado na lista.';
+            }
+
+        } catch (error) {
+            statusDiv.textContent = `Erro: ${error.message}. Verifique o URL ou a disponibilidade do proxy.`;
+            console.error('Erro:', error);
+        }
     }
-  </script>
+</script>
+
 </body>
 </html>
