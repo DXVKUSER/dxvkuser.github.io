@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IPTV Channel Filter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .input-container {
+      margin-bottom: 20px;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #output {
+      margin-top: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
+    #output ul {
+      list-style: none;
+      padding: 0;
+    }
+    #output li {
+      padding: 5px 0;
+    }
+    #output a {
+      color: #007BFF;
+      text-decoration: none;
+    }
+    #output a:hover {
+      text-decoration: underline;
+    }
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+    .info {
+      color: #555;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>IPTV Channel Filter (.m3u8)</h1>
+  <div class="input-container">
+    <input type="text" id="iptvUrl" placeholder="Enter IPTV URL (e.g., http://khx88.com/get.php?...)">
+    <input type="text" id="proxyUrl" placeholder="Optional: Enter custom CORS proxy URL (e.g., https://your-proxy.com/)">
+    <button onclick="filterChannels()">Filter Channels</button>
+  </div>
+  <div id="output">
+    <p class="info">Note: Host this page on a web server (e.g., using 'http-server' or 'python -m http.server') to avoid CORS issues. If the IPTV server blocks direct requests, provide a custom CORS proxy URL.</p>
+  </div>
+
+  <script>
+    async function filterChannels() {
+      const url = document.getElementById('iptvUrl').value.trim();
+      const proxyUrl = document.getElementById('proxyUrl').value.trim();
+      const outputDiv = document.getElementById('output');
+      outputDiv.innerHTML = '';
+
+      // Validate URL
+      if (!url) {
+        outputDiv.innerHTML = '<p class="error">Please enter a valid IPTV URL.</p>';
+        return;
+      }
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        outputDiv.innerHTML = '<p class="error">IPTV URL must start with http:// or https://</p>';
+        return;
+      }
+      if (proxyUrl && !proxyUrl.startsWith('https://')) {
+        outputDiv.innerHTML = '<p class="error">Proxy URL must start with https://</p>';
+        return;
+      }
+
+      try {
+        // Use proxy if provided, otherwise attempt direct fetch
+        const fetchUrl = proxyUrl ? proxyUrl + url : url;
+
+        // Fetch the IPTV playlist
+        const response = await fetch(fetchUrl, {
+          method: 'GET',
+          headers: {
+            'Accept': 'text/plain'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
+        }
+
+        const text = await response.text();
+
+        // Split the playlist into lines
+        const lines = text.split('\n');
+        const channels = [];
+
+        // Parse the M3U playlist
+        let currentChannel = null;
+        for (const line of lines) {
+          if (line.startsWith('#EXTINF')) {
+            currentChannel = { info: line };
+          } else if (line.startsWith('http') && currentChannel) {
+            // Check if the link ends with .m3u8 and does not end with .mp4, .avi, or .mkv
+            if (line.toLowerCase().endsWith('.m3u8') &&
+                !line.toLowerCase().endsWith('.mp4') &&
+                !line.toLowerCase().endsWith('.avi') &&
+                !line.toLowerCase().endsWith('.mkv')) {
+              currentChannel.url = line;
+              channels.push(currentChannel);
+            }
+            currentChannel = null;
+          }
+        }
+
+        // Display the filtered channels
+        if (channels.length === 0) {
+          outputDiv.innerHTML = '<p class="error">No channels with .m3u8 extension found.</p>';
+          return;
+        }
+
+        const ul = document.createElement('ul');
+        channels.forEach(channel => {
+          const li = document.createElement('li');
+          const channelName = channel.info.match(/,(.+)$/)?.[1] || 'Unnamed Channel';
+          const a = document.createElement('a');
+          a.href = channel.url;
+          a.textContent = channelName;
+          a.target = '_blank';
+          li.appendChild(a);
+          ul.appendChild(li);
+        });
+        outputDiv.appendChild(ul);
+      } catch (error) {
+        outputDiv.innerHTML = `<p class="error">Error: ${error.message}. Possible causes: CORS restrictions, invalid IPTV URL, or server is down. Try:
+          <ul>
+            <li>Hosting this page on a web server (e.g., 'http-server' or 'python -m http.server').</li>
+            <li>Using a custom CORS proxy (e.g., set up your own at https://github.com/Rob--W/cors-anywhere).</li>
+            <li>Verifying the IPTV URL works in a media player like VLC.</li>
+          </ul>
+        </p>`;
+      }
+    }
+  </script>
+</body>
+</html>
