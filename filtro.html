@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizador de IPTV 2</title>
+    <title>Baixar Lista IPTV 3</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -22,10 +22,10 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            text-align: center;
         }
         h1 {
             color: #4CAF50;
-            text-align: center;
             margin-bottom: 20px;
         }
         .input-group {
@@ -60,132 +60,72 @@
             font-size: 14px;
             color: #f44336;
         }
-        #channel-list {
-            list-style: none;
-            padding: 0;
-            max-height: 500px;
-            overflow-y: auto;
-            border: 1px solid #333;
-            border-radius: 4px;
-            background-color: #2e2e2e;
+        #download-container {
+            margin-top: 20px;
         }
-        .channel-item {
-            padding: 10px;
-            border-bottom: 1px solid #333;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .channel-item:last-child {
-            border-bottom: none;
-        }
-        .channel-item a {
-            color: #90caf9;
-            text-decoration: none;
-            display: block;
-            font-size: 16px;
-            transition: color 0.3s ease;
-            flex-grow: 1;
-            margin-right: 10px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .channel-item a:hover {
-            color: #64b5f6;
-        }
-        .download-button {
-            background-color: #555;
+        #download-link {
+            display: none; /* Inicia escondido */
+            background-color: #007bff;
             color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
+            padding: 15px 25px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
             transition: background-color 0.3s ease;
         }
-        .download-button:hover {
-            background-color: #777;
+        #download-link:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Visualizador de IPTV</h1>
+    <h1>Baixar Lista M3U Completa</h1>
+    <p>Insira o URL da sua lista IPTV e clique em "Gerar Link" para baixar o arquivo completo.</p>
     <div class="input-group">
         <input type="text" id="m3u-url" placeholder="Cole o URL da sua lista M3U aqui...">
-        <button onclick="loadM3U()">Carregar e Filtrar</button>
+        <button onclick="generateDownloadLink()">Gerar Link</button>
     </div>
     <div id="status"></div>
-    <ul id="channel-list">
-        </ul>
+    <div id="download-container">
+        <a id="download-link">Baixar Lista Completa</a>
+    </div>
 </div>
 
 <script>
-    async function loadM3U() {
+    function generateDownloadLink() {
         const m3uUrl = document.getElementById('m3u-url').value;
         const statusDiv = document.getElementById('status');
-        const channelList = document.getElementById('channel-list');
+        const downloadLink = document.getElementById('download-link');
 
         if (!m3uUrl) {
             statusDiv.textContent = 'Por favor, insira um URL de lista M3U.';
+            downloadLink.style.display = 'none';
             return;
         }
 
-        statusDiv.textContent = 'Carregando e filtrando lista...';
-        channelList.innerHTML = '';
+        // A lógica do proxy para contornar o CORS ainda é necessária aqui
+        // pois a página precisa acessar a URL original para criar o link de download
+        // que, quando clicado, baixará o arquivo M3U diretamente.
+        // No entanto, para o download direto, o link do arquivo precisa ser a URL original,
+        // não a URL do proxy.
+        downloadLink.href = m3uUrl;
 
-        // Tente usar este proxy mais estável
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(m3uUrl)}`;
-
+        // O nome do arquivo será o nome da lista ou um nome padrão
+        let filename = 'lista_iptv.m3u';
         try {
-            const response = await fetch(proxyUrl);
-            if (!response.ok) {
-                throw new Error(`Erro ao carregar a lista: ${response.statusText}`);
-            }
-
-            const m3uText = await response.text();
-            
-            const channelRegex = /#EXTINF:.*,(.*?)\n(http(?:s)?:\/\/[^\s,]+\.m3u8)/g;
-            const fragment = document.createDocumentFragment();
-            let match;
-            let count = 0;
-
-            while ((match = channelRegex.exec(m3uText)) !== null) {
-                const channelName = match[1].trim();
-                const channelUrl = match[2].trim();
-                
-                const li = document.createElement('li');
-                li.classList.add('channel-item');
-
-                const channelNameLink = document.createElement('a');
-                channelNameLink.href = channelUrl;
-                channelNameLink.textContent = channelName;
-                channelNameLink.target = '_blank';
-                
-                const downloadLink = document.createElement('a');
-                downloadLink.href = channelUrl;
-                downloadLink.textContent = 'Baixar';
-                downloadLink.classList.add('download-button');
-                downloadLink.download = `${channelName}.m3u8`;
-
-                li.appendChild(channelNameLink);
-                li.appendChild(downloadLink);
-                fragment.appendChild(li);
-                count++;
-            }
-
-            if (count > 0) {
-                channelList.appendChild(fragment);
-                statusDiv.textContent = `Encontrados ${count} canais ao vivo.`;
-            } else {
-                statusDiv.textContent = 'Nenhum canal ao vivo (.m3u8) foi encontrado na lista.';
-            }
-
-        } catch (error) {
-            statusDiv.textContent = `Erro: ${error.message}. Verifique o URL e a conexão com o proxy.`;
-            console.error('Erro:', error);
+            const url = new URL(m3uUrl);
+            const pathSegments = url.pathname.split('/');
+            filename = pathSegments[pathSegments.length - 1] || 'lista_iptv.m3u';
+        } catch (e) {
+            // Se a URL for inválida, usa o nome padrão
         }
+        downloadLink.download = filename;
+
+        statusDiv.textContent = 'Link de download gerado com sucesso!';
+        downloadLink.style.display = 'inline-block';
     }
 </script>
 
