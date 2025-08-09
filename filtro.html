@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizador de IPTV</title>
+    <title>Visualizador de IPTV 2</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -133,9 +133,10 @@
         }
 
         statusDiv.textContent = 'Carregando e filtrando lista...';
-        channelList.innerHTML = ''; // Limpa a lista anterior
+        channelList.innerHTML = '';
 
-        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(m3uUrl)}`;
+        // Tente usar este proxy mais estável
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(m3uUrl)}`;
 
         try {
             const response = await fetch(proxyUrl);
@@ -145,7 +146,6 @@
 
             const m3uText = await response.text();
             
-            // Regex corrigida para ser mais abrangente e incluir caracteres como '@'
             const channelRegex = /#EXTINF:.*,(.*?)\n(http(?:s)?:\/\/[^\s,]+\.m3u8)/g;
             const fragment = document.createDocumentFragment();
             let match;
@@ -183,7 +183,7 @@
             }
 
         } catch (error) {
-            statusDiv.textContent = `Erro: ${error.message}. Verifique o URL ou a disponibilidade do proxy.`;
+            statusDiv.textContent = `Erro: ${error.message}. Verifique o URL e a conexão com o proxy.`;
             console.error('Erro:', error);
         }
     }
