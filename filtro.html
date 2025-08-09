@@ -79,7 +79,7 @@
     <button onclick="filterChannels()">Filter Channels</button>
   </div>
   <div id="output">
-    <p class="info">Note: Host this page on a web server (e.g., using 'http-server' or 'python -m http.server') to avoid CORS issues. If the IPTV server blocks direct requests, provide a custom CORS proxy URL.</p>
+    <p class="info">Note: To avoid CORS issues, host this page on a web server (e.g., using 'http-server' or 'python -m http.server'). Test the IPTV URL in VLC or with 'curl' to ensure it’s valid. If needed, provide a custom CORS proxy URL or use a server-side script.</p>
   </div>
 
   <script>
@@ -145,7 +145,7 @@
 
         // Display the filtered channels
         if (channels.length === 0) {
-          outputDiv.innerHTML = '<p class="error">No channels with .m3u8 extension found.</p>';
+          outputDiv.innerHTML = '<p class="error">No channels with .m3u8 extension found in the playlist.</p>';
           return;
         }
 
@@ -162,11 +162,13 @@
         });
         outputDiv.appendChild(ul);
       } catch (error) {
-        outputDiv.innerHTML = `<p class="error">Error: ${error.message}. Possible causes: CORS restrictions, invalid IPTV URL, or server is down. Try:
+        outputDiv.innerHTML = `<p class="error">Error: ${error.message}. Possible causes and solutions:
           <ul>
-            <li>Hosting this page on a web server (e.g., 'http-server' or 'python -m http.server').</li>
-            <li>Using a custom CORS proxy (e.g., set up your own at https://github.com/Rob--W/cors-anywhere).</li>
-            <li>Verifying the IPTV URL works in a media player like VLC.</li>
+            <li><strong>CORS restrictions</strong>: Host this page on a web server (e.g., run 'http-server' or 'python -m http.server 8000' and access http://localhost:8000/iptv_filter.html).</li>
+            <li><strong>Invalid IPTV URL</strong>: Test the URL in VLC or with 'curl -L "${url}"' to verify it returns an M3U playlist.</li>
+            <li><strong>Server down</strong>: Contact the IPTV provider to confirm the server is operational.</li>
+            <li><strong>Custom proxy</strong>: Set up a CORS proxy (e.g., https://github.com/Rob--W/cors-anywhere) and enter its URL above.</li>
+            <li><strong>Server-side fetching</strong>: Use a backend script to fetch the playlist (see documentation).</li>
           </ul>
         </p>`;
       }
