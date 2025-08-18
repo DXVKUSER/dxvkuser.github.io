@@ -1,581 +1,354 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Filtro de Canais ao Vivo</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-        }
-        .input-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input[type="text"], textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            flex-grow: 1;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        button.download-btn {
-            background-color: #2196F3;
-        }
-        button.download-btn:hover {
-            background-color: #0b7dda;
-        }
-        button.clear-btn {
-            background-color: #f44336;
-        }
-        button.clear-btn:hover {
-            background-color: #d32f2f;
-        }
-        .status {
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 4px;
-        }
-        .success {
-            background-color: #dff0d8;
-            color: #3c763d;
-        }
-        .error {
-            background-color: #f2dede;
-            color: #a94442;
-        }
-        .warning {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-        .hidden {
-            display: none;
-        }
-        .download-section {
-            text-align: center;
-            margin-top: 20px;
-            padding: 20px;
-            background-color: #e3f2fd;
-            border-radius: 8px;
-            border: 2px dashed #2196F3;
-        }
-        .download-section p {
-            margin: 0 0 15px 0;
-            font-size: 16px;
-            color: #333;
-        }
-        .download-section button {
-            font-size: 18px;
-            padding: 12px 30px;
-        }
-        .filter-info {
-            background-color: #fff3cd;
-            border: 1px solid #ffeeba;
-            border-radius: 4px;
-            padding: 10px;
-            margin-bottom: 15px;
-        }
-        .filter-info h3 {
-            margin-top: 0;
-            color: #856404;
-        }
-        .filter-info ul {
-            margin-bottom: 0;
-            padding-left: 20px;
-        }
-        .filter-info li {
-            color: #856404;
-        }
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 10px;
-            vertical-align: middle;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        .processing {
-            background-color: #d1ecf1;
-            color: #0c5460;
-        }
-        .cors-warning {
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            border-radius: 4px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        .cors-warning h3 {
-            margin-top: 0;
-            color: #721c24;
-        }
-        .cors-warning p {
-            margin-bottom: 10px;
-            color: #721c24;
-        }
-        .cors-warning ol {
-            margin-top: 0;
-            padding-left: 20px;
-        }
-        .cors-warning li {
-            color: #721c24;
-            margin-bottom: 5px;
-        }
-        .tab-container {
-            margin-bottom: 15px;
-        }
-        .tabs {
-            display: flex;
-            border-bottom: 1px solid #ddd;
-        }
-        .tab {
-            padding: 10px 20px;
-            cursor: pointer;
-            background-color: #f1f1f1;
-            border: 1px solid #ddd;
-            border-bottom: none;
-            margin-right: 5px;
-            border-radius: 4px 4px 0 0;
-        }
-        .tab.active {
-            background-color: white;
-            border-bottom: 1px solid white;
-            margin-bottom: -1px;
-        }
-        .tab-content {
-            display: none;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-top: none;
-            border-radius: 0 0 4px 4px;
-        }
-        .tab-content.active {
-            display: block;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DXVK ADDON</title>
+  <style>
+    :root {
+      --primary-color: #00FF1F; /* Verde Limão primário */
+      --secondary-color: #00ffcc; /* Ciano/Turquesa para destaque */
+      --background-dark: #1e1e1e;
+      --text-light: #ffffff;
+      --install-text-color: #e0e0e0;
+      --neon-glow-color: #39FF14; /* Um verde limão ainda mais vibrante para o brilho */
+      --transparent-dark: rgba(30, 30, 30, 0.7); /* Cor original do container com 70% de opacidade */
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-image: url("https://i.imgur.com/zgNQ1SX.jpeg");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      color: var(--text-light);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      justify-content: center;
+      position: relative; /* Necessário para posicionar as luzes neon */
+      overflow-x: hidden; /* Evita barra de rolagem horizontal */
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      width: 10px; /* Largura das luzes neon */
+      background-color: var(--neon-glow-color);
+      box-shadow: 0 0 20px var(--neon-glow-color),
+                  0 0 40px var(--neon-glow-color),
+                  0 0 60px var(--neon-glow-color);
+      opacity: 0.7; /* Opacidade inicial */
+      animation: neon-blink 1s infinite alternate; /* Animação de piscar */
+      z-index: -1; /* Garante que fiquem atrás do conteúdo principal */
+    }
+
+    body::before {
+      left: 0;
+    }
+
+    body::after {
+      right: 0;
+    }
+
+    @keyframes neon-blink {
+      from {
+        opacity: 0.7;
+      }
+      to {
+        opacity: 0.3;
+      }
+    }
+
+    .container, .instructions-container {
+      max-width: 700px;
+      width: 90%;
+      margin: 20px auto;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      text-align: center;
+      background-color: var(--transparent-dark);
+    }
+
+    .instructions-container {
+        text-align: left;
+    }
+
+    h1 {
+      color: var(--primary-color);
+      margin-bottom: 25px;
+    }
+
+    .install-intro, .pix {
+      font-size: 1.05em;
+      line-height: 1.6em;
+      margin-bottom: 30px;
+      color: var(--install-text-color);
+    }
+
+    .install-intro strong {
+        color: var(--primary-color);
+    }
+
+    .download-list {
+      list-style: none;
+      padding: 0;
+      margin-top: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .download-list li {
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .download-list img {
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+
+    .download-list a {
+      color: var(--primary-color);
+      text-decoration: none;
+      font-size: 1.1em;
+      transition: color 0.3s ease, text-shadow 0.3s ease;
+    }
+
+    .download-list a:hover {
+      text-decoration: underline;
+      color: var(--neon-glow-color);
+      text-shadow: 0 0 5px var(--neon-glow-color),
+                   0 0 10px var(--neon-glow-color),
+                   0 0 15px var(--neon-glow-color);
+    }
+
+    .pix {
+        margin-top: 30px;
+    }
+
+    .pix strong {
+      font-size: 1.3em;
+      color: var(--secondary-color);
+    }
+
+    .instructions-container p {
+        font-size: 1.1em;
+        line-height: 1.6em;
+        color: var(--text-light);
+        margin-bottom: 15px;
+    }
+
+    .instructions-container a {
+        color: var(--primary-color);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .instructions-container a:hover {
+        text-decoration: underline;
+        color: var(--neon-glow-color);
+    }
+
+    audio {
+      margin-top: 40px;
+      width: 90%;
+      max-width: 400px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Filtro de Canais ao Vivo IPTV</h1>
-        
-        <div class="filter-info">
-            <h3>Critérios de Filtragem:</h3>
-            <ul>
-                <li>Manter apenas canais com links terminados em <strong>.m3u8</strong></li>
-                <li>Ignorar VODs com extensões: <strong>.mp4, .avi, .mkv, .mov, .wmv, .flv</strong></li>
-                <li>Ignorar grupos VOD: <strong>VOD, Filmes, Séries, Cinema, etc.</strong></li>
-                <li>Ignorar grupos adultos: <strong>+18, Adulto, XXX, Canais Adultos, Porn, etc.</strong></li>
-            </ul>
-        </div>
-        
-        <div class="cors-warning hidden" id="corsWarning">
-            <h3>Problema de Acesso à URL Detectado</h3>
-            <p>Não foi possível acessar a URL diretamente devido a restrições de segurança do navegador (CORS). Por favor, use uma das alternativas abaixo:</p>
-            <ol>
-                <li><strong>Opção 1:</strong> Copie o conteúdo da lista M3U diretamente na aba "Conteúdo M3U"</li>
-                <li><strong>Opção 2:</strong> Use uma extensão de navegador como "CORS Unblock" ou "Allow CORS"</li>
-                <li><strong>Opção 3:</strong> Baixe o arquivo M3U manualmente e cole o conteúdo na aba "Conteúdo M3U"</li>
-            </ol>
-        </div>
-        
-        <div class="tab-container">
-            <div class="tabs">
-                <div class="tab active" onclick="switchTab('url')">URL da Lista</div>
-                <div class="tab" onclick="switchTab('content')">Conteúdo M3U</div>
-            </div>
-            
-            <div id="urlTab" class="tab-content active">
-                <div class="input-group">
-                    <label for="m3uUrl">URL da Lista M3U:</label>
-                    <input type="text" id="m3uUrl" placeholder="Cole a URL da lista M3U aqui" 
-                           value="http://p2king.redemais.click/get.php?username=453294446&password=754294926&type=m3u_plus&output=m3u8">
-                </div>
-            </div>
-            
-            <div id="contentTab" class="tab-content">
-                <div class="input-group">
-                    <label for="m3uContent">Cole o conteúdo M3U diretamente:</label>
-                    <textarea id="m3uContent" rows="12" placeholder="Cole o conteúdo da lista M3U aqui"></textarea>
-                </div>
-            </div>
-        </div>
-        
-        <div class="button-group">
-            <button onclick="filterChannels()" id="filterBtn">Filtrar Canais ao Vivo</button>
-            <button onclick="clearAll()" class="clear-btn">Limpar</button>
-        </div>
-        
-        <div id="status" class="status hidden"></div>
-        
-        <div id="downloadSection" class="download-section hidden">
-            <p id="downloadInfo">Lista M3U filtrada com <span id="channelCount">0</span> canais ao vivo:</p>
-            <button id="downloadBtn" class="download-btn" onclick="downloadFilteredM3U()">
-                Baixar Lista M3U Filtrada
-            </button>
-        </div>
-    </div>
+  <div class="container">
+    <h1>DXVK</h1>
 
-    <script>
-        // Palavras-chave para identificar VODs, filmes e séries
-        const vodKeywords = [
-            'vod', 'movie', 'filme', 'filmes', 'series', 'séries', 'serie', 
-            'série', 'cinema', 'video', 'vídeo', 'media', 'midia', 'mídia'
-        ];
-        
-        // Palavras-chave para identificar canais adultos
-        const adultKeywords = [
-            '+18', 'adulto', 'adultos', 'xxx', 'porn', 'erotico', 'hot', 'sexo'
-        ];
+    
 
-        // Extensões de arquivo para ignorar (VODs)
-        const vodExtensions = [
-            '.mp4', '.avi', '.mkv', '.mov', '.wmv', '.flv', '.webm', '.mpeg', 
-            '.mpg', '.m4v', '.3gp', '.ts', '.m3u', '.pls'
-        ];
+    <ul class="download-list">
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="plugin.video.gifpeg.tv.zip">plugin.video.gifpeg.tv.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="plugin.video.f4mTester.paratestartvbox2.zip">plugin.video.f4mTester.paratestartvbox2.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="plugin.video.f4mTester.4.2.4.zip">plugin.video.f4mTester.4.2.4.zip</a>
+      </li>
+      <li>
+        <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="script.hls.tester.0.0.4.mod4.zip">script.hls.tester.0.0.4.mod4.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="script.hls.tester.fedora6.zip">script.hls.tester.fedora6.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="script.hls.tester.androidtv.zip">script.hls.tester.androidtv.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="script.hls.tester.miguel.zip">script.hls.tester.miguel.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="script.hls.tester.miguel3.zip">script.hls.tester.miguel3.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="script.hls.tester.miguel7.zip">script.hls.tester.miguel7.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="script.hls.tester.miguel8.zip">script.hls.tester.miguel8.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="script.hls.tester.miguel11.zip">script.hls.tester.miguel11.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="script.hls.tester.0.0.5.zip">script.hls.tester.0.0.5.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="script.hls.tester.miguelmod3.zip">script.hls.tester.miguelmod3.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="script.hls.tester.miguelmod7.zip">script.hls.tester.miguelmod7.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="script.hls.tester.timeshiftmod2.zip">script.hls.tester.timeshiftmod2.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="plugin.video.myiptvproxy.tunel.zip">plugin.video.myiptvproxy.tunel.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="plugin.video.myiptvproxy.flask4.zip">plugin.video.myiptvproxy.flask4.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="plugin.video.meuhlsplayer.zip">plugin.video.meuhlsplayer.zip</a>
+      </li>
+      <li>
+        <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="script.hls.tester.0.0.4.zip">script.hls.tester.0.0.4.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="plugin.video.myiptvproxy.inputstream.zip">plugin.video.myiptvproxy.inputstream.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="plugin.video.myiptvproxy.zip">plugin.video.myiptvproxy.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="script.hls.tester.gemini3.zip">script.hls.tester.gemini3.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="script.hls.tester.mxlinux5.zip">script.hls.tester.mxlinux5.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="plugin.video.myiptvproxy.0.0.1.v2.zip">plugin.video.myiptvproxy.0.0.1.v2.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="script.hls.tester.mxlinux4.zip">script.hls.tester.mxlinux4.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="script.hls.tester.0.0.5.proxy3.zip">script.hls.tester.0.0.5.proxy3.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="script.hls.tester.gemini10.zip">script.hls.tester.gemini10.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="script.hls.tester.gemini10.flask.zip">script.hls.tester.gemini10.flask.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="script.hls.tester.gemini10.flask2.zip">script.hls.tester.gemini10.flask2.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="script.module.netunblock.zip">script.module.netunblock.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="script.module.flask.zip">script.module.flask.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="plugin.video.f4mTester.4.2.5.zip">plugin.video.f4mTester.4.2.5.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="One.repo-1.12.zip">One.repo-1.12.zip</a>
+      </li>
+      <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="plugin.video.myiptvproxy.tunel3.zip">plugin.video.myiptvproxy.tunel3.zip</a>
+      </li>
+         <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="script.hls.tester.fedora.zip">script.hls.tester.fedora.zip</a>
+      </li>
+      </li>
+         <li>
+        <img alt="Ícone de Verificação" height="20px" src="check.png" width="20px" />
+        <a href="plugin.video.youtube-master.zip">plugin.video.youtube-master.zip</a>
+      </li>
+    </ul>
 
-        let filteredChannels = [];
-        let activeTab = 'url';
+    <p>
+      <b>Instruções para a adição no gestor de arquivo:</b>
+      <br><br>
+      1. Abra o Kodi e vá até Configurações (ícone de engrenagem).
+      <br>
+      2. Clique em Gestor de Arquivos.
+      <br>
+      3. Selecione Adicionar fonte.
+      <br>
+      4. Clique em Nenhum e digite: <a href="https://dxvkuser.github.io">https://dxvkuser.github.io</a>
+      <br>
+      5. Dê um nome à fonte (por exemplo: dxvk).
+      <br>
+      6. Clique em OK e volte à tela inicial.
+      <br>
+      7. Clique no ícone de Instalar a partir de um arquivo .zip, depois selecione a fonte que você acabou de adicionar (gifpegtv).
+    </p>
+  </div>
 
-        function switchTab(tab) {
-            // Atualizar abas
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            
-            if (tab === 'url') {
-                document.querySelector('.tab:first-child').classList.add('active');
-                document.getElementById('urlTab').classList.add('active');
-                activeTab = 'url';
-            } else {
-                document.querySelector('.tab:last-child').classList.add('active');
-                document.getElementById('contentTab').classList.add('active');
-                activeTab = 'content';
-            }
-        }
+  
 
-        function showStatus(message, isError = false, isProcessing = false) {
-            const statusEl = document.getElementById('status');
-            statusEl.innerHTML = isProcessing ? `<span class="loading"></span> ${message}` : message;
-            statusEl.className = `status ${isError ? 'error' : isProcessing ? 'processing' : 'success'}`;
-            statusEl.classList.remove('hidden');
-            
-            if (!isProcessing) {
-                setTimeout(() => {
-                    statusEl.classList.add('hidden');
-                }, 5000);
-            }
-        }
-
-        function showCorsWarning() {
-            const corsWarning = document.getElementById('corsWarning');
-            corsWarning.classList.remove('hidden');
-            showStatus('Problema de CORS detectado. Verifique as instruções abaixo.', true);
-        }
-
-        function hideCorsWarning() {
-            const corsWarning = document.getElementById('corsWarning');
-            corsWarning.classList.add('hidden');
-        }
-
-        function isLiveChannel(channel) {
-            // Critério 1: Verificar se a URL termina com .m3u8
-            if (!channel.url || !channel.url.toLowerCase().endsWith('.m3u8')) {
-                return false;
-            }
-            
-            const lowerGroup = channel.group ? channel.group.toLowerCase() : '';
-            const lowerName = channel.name ? channel.name.toLowerCase() : '';
-
-            // Critério 2: Verificar se não é VOD pelo grupo ou nome
-            for (const keyword of vodKeywords) {
-                if (lowerGroup.includes(keyword) || lowerName.includes(keyword)) {
-                    return false;
-                }
-            }
-
-            // Critério 3: Verificar se não é adulto pelo grupo ou nome
-            for (const keyword of adultKeywords) {
-                if (lowerGroup.includes(keyword) || lowerName.includes(keyword)) {
-                    return false;
-                }
-            }
-            
-            return true;
-        }
-
-        function parseM3U(content) {
-            if (!content || typeof content !== 'string') {
-                throw new Error('Conteúdo M3U inválido');
-            }
-            
-            const lines = content.split('\n');
-            const channels = [];
-            let currentChannel = null;
-            
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i].trim();
-                
-                if (line.startsWith('#EXTINF:')) {
-                    // Extrai informações do canal
-                    const nameMatch = line.match(/,(.*)$/);
-                    const groupMatch = line.match(/group-title="([^"]*)"/);
-                    const logoMatch = line.match(/tvg-logo="([^"]*)"/);
-                    
-                    currentChannel = {
-                        name: nameMatch ? nameMatch[1] : 'Canal Sem Nome',
-                        group: groupMatch ? groupMatch[1] : 'Sem Categoria',
-                        logo: logoMatch ? logoMatch[1] : '',
-                        url: '',
-                        extinf: line
-                    };
-                } 
-                else if (line && !line.startsWith('#') && currentChannel) {
-                    // URL do canal
-                    currentChannel.url = line;
-                    channels.push({...currentChannel});
-                    currentChannel = null;
-                }
-            }
-            
-            return channels;
-        }
-
-        function generateFilteredM3U(channels) {
-            let m3uContent = '#EXTM3U\n';
-            
-            channels.forEach(channel => {
-                m3uContent += `${channel.extinf}\n`;
-                m3uContent += `${channel.url}\n`;
-            });
-            
-            return m3uContent;
-        }
-
-        function showDownloadSection(channelCount) {
-            const downloadSection = document.getElementById('downloadSection');
-            const channelCountEl = document.getElementById('channelCount');
-            
-            channelCountEl.textContent = channelCount;
-            downloadSection.classList.remove('hidden');
-        }
-
-        function hideDownloadSection() {
-            const downloadSection = document.getElementById('downloadSection');
-            downloadSection.classList.add('hidden');
-        }
-
-        async function fetchWithCORS(url) {
-            try {
-                // Tentar fetch normal primeiro
-                const response = await fetch(url);
-                if (response.ok) {
-                    return await response.text();
-                }
-            } catch (e) {
-                console.log('Fetch normal falhou, tentando alternativas...');
-            }
-            
-            // Tentar com proxy CORS público
-            const proxyUrls = [
-                'https://cors-anywhere.herokuapp.com/',
-                'https://api.allorigins.win/raw?url=',
-                'https://corsproxy.io/?'
-            ];
-            
-            for (const proxy of proxyUrls) {
-                try {
-                    const proxyUrl = proxy + encodeURIComponent(url);
-                    const response = await fetch(proxyUrl);
-                    if (response.ok) {
-                        return await response.text();
-                    }
-                } catch (e) {
-                    console.log(`Proxy ${proxy} falhou:`, e);
-                }
-            }
-            
-            throw new Error('Não foi possível acessar a URL devido a restrições de CORS');
-        }
-
-        async function filterChannels() {
-            const urlInput = document.getElementById('m3uUrl').value.trim();
-            const contentInput = document.getElementById('m3uContent').value.trim();
-            const filterBtn = document.getElementById('filterBtn');
-            
-            hideCorsWarning();
-            
-            if (activeTab === 'url' && !urlInput) {
-                showStatus('Por favor, forneça uma URL da lista M3U.', true);
-                return;
-            }
-            
-            if (activeTab === 'content' && !contentInput) {
-                showStatus('Por favor, cole o conteúdo M3U.', true);
-                return;
-            }
-            
-            // Esconder seção de download anterior
-            hideDownloadSection();
-            
-            // Desabilitar botão durante o processamento
-            filterBtn.disabled = true;
-            filterBtn.innerHTML = '<span class="loading"></span> Processando...';
-            
-            try {
-                let content = '';
-                
-                if (activeTab === 'url') {
-                    showStatus('Carregando lista M3U...', false, true);
-                    
-                    // Verificar se a URL é válida
-                    try {
-                        new URL(urlInput);
-                    } catch (e) {
-                        throw new Error('URL inválida');
-                    }
-                    
-                    content = await fetchWithCORS(urlInput);
-                    
-                    // Verificar se o conteúdo é válido
-                    if (!content || !content.includes('#EXTM3U')) {
-                        throw new Error('A lista M3U não é válida ou está vazia');
-                    }
-                } else {
-                    content = contentInput;
-                    
-                    // Verificar se o conteúdo é válido
-                    if (!content || !content.includes('#EXTM3U')) {
-                        throw new Error('O conteúdo M3U não é válido');
-                    }
-                }
-                
-                showStatus('Processando lista...', false, true);
-                
-                const allChannels = parseM3U(content);
-                
-                if (!allChannels || allChannels.length === 0) {
-                    throw new Error('Nenhum canal encontrado na lista');
-                }
-                
-                // Filtra apenas canais ao vivo (.m3u8, não VODs e não adultos)
-                filteredChannels = allChannels.filter(channel => {
-                    try {
-                        return isLiveChannel(channel);
-                    } catch (e) {
-                        console.error('Erro ao processar canal:', e);
-                        return false;
-                    }
-                });
-                
-                if (filteredChannels.length > 0) {
-                    showStatus(`Filtro concluído! ${filteredChannels.length} canais ao vivo encontrados.`);
-                    showDownloadSection(filteredChannels.length);
-                } else {
-                    showStatus('Nenhum canal ao vivo encontrado na lista.', true);
-                }
-            } catch (error) {
-                console.error('Erro detalhado:', error);
-                
-                if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
-                    showCorsWarning();
-                } else {
-                    showStatus(`Erro: ${error.message}`, true);
-                }
-            } finally {
-                // Reabilitar botão
-                filterBtn.disabled = false;
-                filterBtn.innerHTML = 'Filtrar Canais ao Vivo';
-            }
-        }
-
-        function downloadFilteredM3U() {
-            if (filteredChannels.length === 0) {
-                showStatus('Nenhuma lista filtrada para baixar.', true);
-                return;
-            }
-            
-            try {
-                const m3uContent = generateFilteredM3U(filteredChannels);
-                
-                // Verificar se o conteúdo é válido
-                if (!m3uContent || m3uContent.length < 10) {
-                    throw new Error('Conteúdo da lista inválido');
-                }
-                
-                const blob = new Blob([m3uContent], { type: 'text/plain;charset=utf-8' });
-                const url = URL.createObjectURL(blob);
-                
-                const a = document.createElement('a');
-                a.href = url;
-                const today = new Date().toISOString().slice(0, 10);
-                a.download = `canais_m3u8_${today}.m3u`;
-                
-                // Adicionar ao DOM, clicar e remover
-                document.body.appendChild(a);
-                a.click();
-                
-                // Limpar após um pequeno delay
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                }, 100);
-                
-                showStatus(`Lista M3U com ${filteredChannels.length} canais ao vivo baixada com sucesso!`);
-            } catch (error) {
-                console.error('Erro ao baixar:', error);
-                showStatus(`Erro ao baixar a lista: ${error.message}`, true);
-            }
-        }
-
-        function clearAll() {
-            document.getElementById('m3uUrl').value = '';
-            document.getElementById('m3uContent').value = '';
-            hideDownloadSection();
-            hideCorsWarning();
-            filteredChannels = [];
-            showStatus('Formulário limpo!');
-        }
-    </script>
+  <audio controls>
+    <source src="https://ice6.somafm.com/deepspaceone-64-aac" type="audio/aac">
+    Seu navegador não suporta o elemento de áudio.
+  </audio>
 </body>
 </html>
