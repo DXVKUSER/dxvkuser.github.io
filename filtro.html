@@ -1,162 +1,581 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baixar Lista IPTV Filtrada 4</title>
+    <title>Filtro de Canais ao Vivo IPTV</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #121212;
-            color: #e0e0e0;
-            margin: 0;
+            max-width: 800px;
+            margin: 0 auto;
             padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            background-color: #f5f5f5;
         }
         .container {
-            width: 100%;
-            max-width: 800px;
-            background-color: #1e1e1e;
+            background: white;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         h1 {
-            color: #4CAF50;
-            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
         }
         .input-group {
-            display: flex;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
-        #m3u-url {
-            flex-grow: 1;
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], textarea {
+            width: 100%;
             padding: 10px;
-            border: 1px solid #333;
-            border-radius: 4px 0 0 4px;
-            background-color: #2e2e2e;
-            color: #e0e0e0;
-            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
         }
         button {
-            padding: 10px 15px;
-            border: none;
             background-color: #4CAF50;
             color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
             cursor: pointer;
-            border-radius: 0 4px 4px 0;
             font-size: 16px;
-            transition: background-color 0.3s ease;
+            flex-grow: 1;
         }
         button:hover {
             background-color: #45a049;
         }
-        #status {
+        button.download-btn {
+            background-color: #2196F3;
+        }
+        button.download-btn:hover {
+            background-color: #0b7dda;
+        }
+        button.clear-btn {
+            background-color: #f44336;
+        }
+        button.clear-btn:hover {
+            background-color: #d32f2f;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .hidden {
+            display: none;
+        }
+        .download-section {
             text-align: center;
-            margin-bottom: 20px;
-            font-size: 14px;
-            color: #f44336;
-        }
-        #download-container {
             margin-top: 20px;
+            padding: 20px;
+            background-color: #e3f2fd;
+            border-radius: 8px;
+            border: 2px dashed #2196F3;
         }
-        #download-link {
-            display: none; /* Inicia escondido */
-            background-color: #007bff;
-            color: white;
-            padding: 15px 25px;
-            text-decoration: none;
-            border-radius: 5px;
+        .download-section p {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            color: #333;
+        }
+        .download-section button {
             font-size: 18px;
-            font-weight: bold;
-            transition: background-color 0.3s ease;
+            padding: 12px 30px;
         }
-        #download-link:hover {
-            background-color: #0056b3;
+        .filter-info {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        .filter-info h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+        .filter-info ul {
+            margin-bottom: 0;
+            padding-left: 20px;
+        }
+        .filter-info li {
+            color: #856404;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .processing {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        .cors-warning {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .cors-warning h3 {
+            margin-top: 0;
+            color: #721c24;
+        }
+        .cors-warning p {
+            margin-bottom: 10px;
+            color: #721c24;
+        }
+        .cors-warning ol {
+            margin-top: 0;
+            padding-left: 20px;
+        }
+        .cors-warning li {
+            color: #721c24;
+            margin-bottom: 5px;
+        }
+        .tab-container {
+            margin-bottom: 15px;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #f1f1f1;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            margin-right: 5px;
+            border-radius: 4px 4px 0 0;
+        }
+        .tab.active {
+            background-color: white;
+            border-bottom: 1px solid white;
+            margin-bottom: -1px;
+        }
+        .tab-content {
+            display: none;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+        }
+        .tab-content.active {
+            display: block;
         }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <h1>Baixar Lista M3U Filtrada</h1>
-    <p>Insira o URL da sua lista IPTV e clique em "Gerar Arquivo" para baixar a lista completa, filtrada para canais .m3u8.</p>
-    <div class="input-group">
-        <input type="text" id="m3u-url" placeholder="Cole o URL da sua lista M3U aqui...">
-        <button onclick="generateFilteredFile()">Gerar Arquivo</button>
-    </div>
-    <div id="status"></div>
-    <div id="download-container">
-        <a id="download-link">Baixar Lista Filtrada</a>
-    </div>
-</div>
-
-<script>
-    async function generateFilteredFile() {
-        const m3uUrl = document.getElementById('m3u-url').value;
-        const statusDiv = document.getElementById('status');
-        const downloadLink = document.getElementById('download-link');
-
-        if (!m3uUrl) {
-            statusDiv.textContent = 'Por favor, insira um URL de lista M3U.';
-            downloadLink.style.display = 'none';
-            return;
-        }
-
-        statusDiv.textContent = 'Carregando e filtrando a lista...';
-        downloadLink.style.display = 'none';
-
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(m3uUrl)}`;
+    <div class="container">
+        <h1>Filtro de Canais ao Vivo IPTV</h1>
         
-        const headers = new Headers();
-        headers.append('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36');
-        headers.append('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9');
-        headers.append('Accept-Language', 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7');
-
-        try {
-            const response = await fetch(proxyUrl, { headers: headers });
-            if (!response.ok) {
-                throw new Error(`Erro ao carregar a lista: ${response.statusText}`);
-            }
-
-            const m3uText = await response.text();
+        <div class="filter-info">
+            <h3>Critérios de Filtragem:</h3>
+            <ul>
+                <li>Manter apenas canais com links terminados em <strong>.m3u8</strong></li>
+                <li>Ignorar VODs com extensões: <strong>.mp4, .avi, .mkv, .mov, .wmv, .flv</strong></li>
+                <li>Ignorar grupos VOD: <strong>VOD, Filmes, Séries, Cinema, etc.</strong></li>
+                <li>Ignorar grupos adultos: <strong>+18, Adulto, XXX, Canais Adultos, Porn, etc.</strong></li>
+            </ul>
+        </div>
+        
+        <div class="cors-warning hidden" id="corsWarning">
+            <h3>Problema de Acesso à URL Detectado</h3>
+            <p>Não foi possível acessar a URL diretamente devido a restrições de segurança do navegador (CORS). Por favor, use uma das alternativas abaixo:</p>
+            <ol>
+                <li><strong>Opção 1:</strong> Copie o conteúdo da lista M3U diretamente na aba "Conteúdo M3U"</li>
+                <li><strong>Opção 2:</strong> Use uma extensão de navegador como "CORS Unblock" ou "Allow CORS"</li>
+                <li><strong>Opção 3:</strong> Baixe o arquivo M3U manualmente e cole o conteúdo na aba "Conteúdo M3U"</li>
+            </ol>
+        </div>
+        
+        <div class="tab-container">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('url')">URL da Lista</div>
+                <div class="tab" onclick="switchTab('content')">Conteúdo M3U</div>
+            </div>
             
-            let filteredM3UContent = '#EXTM3U\n';
-            const channelRegex = /(#EXTINF:.*,(.*?)\n(http(?:s)?:\/\/[^\s,]+\.m3u8))/g;
-            let match;
-            let count = 0;
+            <div id="urlTab" class="tab-content active">
+                <div class="input-group">
+                    <label for="m3uUrl">URL da Lista M3U:</label>
+                    <input type="text" id="m3uUrl" placeholder="Cole a URL da lista M3U aqui" 
+                           value="http://p2king.redemais.click/get.php?username=453294446&password=754294926&type=m3u_plus&output=m3u8">
+                </div>
+            </div>
+            
+            <div id="contentTab" class="tab-content">
+                <div class="input-group">
+                    <label for="m3uContent">Cole o conteúdo M3U diretamente:</label>
+                    <textarea id="m3uContent" rows="12" placeholder="Cole o conteúdo da lista M3U aqui"></textarea>
+                </div>
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button onclick="filterChannels()" id="filterBtn">Filtrar Canais ao Vivo</button>
+            <button onclick="clearAll()" class="clear-btn">Limpar</button>
+        </div>
+        
+        <div id="status" class="status hidden"></div>
+        
+        <div id="downloadSection" class="download-section hidden">
+            <p id="downloadInfo">Lista M3U filtrada com <span id="channelCount">0</span> canais ao vivo:</p>
+            <button id="downloadBtn" class="download-btn" onclick="downloadFilteredM3U()">
+                Baixar Lista M3U Filtrada
+            </button>
+        </div>
+    </div>
 
-            while ((match = channelRegex.exec(m3uText)) !== null) {
-                // O match[1] contém a linha #EXTINF e o URL completo
-                filteredM3UContent += match[1] + '\n';
-                count++;
-            }
+    <script>
+        // Palavras-chave para identificar VODs, filmes e séries
+        const vodKeywords = [
+            'vod', 'movie', 'filme', 'filmes', 'series', 'séries', 'serie', 
+            'série', 'cinema', 'video', 'vídeo', 'media', 'midia', 'mídia'
+        ];
+        
+        // Palavras-chave para identificar canais adultos
+        const adultKeywords = [
+            '+18', 'adulto', 'adultos', 'xxx', 'porn', 'erotico', 'hot', 'sexo'
+        ];
 
-            if (count > 0) {
-                // Cria um objeto Blob com o conteúdo filtrado
-                const blob = new Blob([filteredM3UContent], { type: 'text/plain' });
-                const url = URL.createObjectURL(blob);
+        // Extensões de arquivo para ignorar (VODs)
+        const vodExtensions = [
+            '.mp4', '.avi', '.mkv', '.mov', '.wmv', '.flv', '.webm', '.mpeg', 
+            '.mpg', '.m4v', '.3gp', '.ts', '.m3u', '.pls'
+        ];
 
-                // Configura o link de download
-                downloadLink.href = url;
-                downloadLink.download = 'lista_filtrada.m3u';
-                downloadLink.textContent = `Baixar Lista Filtrada (${count} canais)`;
-                downloadLink.style.display = 'inline-block';
-                
-                statusDiv.textContent = 'Arquivo filtrado pronto para download!';
+        let filteredChannels = [];
+        let activeTab = 'url';
+
+        function switchTab(tab) {
+            // Atualizar abas
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            if (tab === 'url') {
+                document.querySelector('.tab:first-child').classList.add('active');
+                document.getElementById('urlTab').classList.add('active');
+                activeTab = 'url';
             } else {
-                statusDiv.textContent = 'Nenhum canal ao vivo (.m3u8) foi encontrado na lista.';
+                document.querySelector('.tab:last-child').classList.add('active');
+                document.getElementById('contentTab').classList.add('active');
+                activeTab = 'content';
+            }
+        }
+
+        function showStatus(message, isError = false, isProcessing = false) {
+            const statusEl = document.getElementById('status');
+            statusEl.innerHTML = isProcessing ? `<span class="loading"></span> ${message}` : message;
+            statusEl.className = `status ${isError ? 'error' : isProcessing ? 'processing' : 'success'}`;
+            statusEl.classList.remove('hidden');
+            
+            if (!isProcessing) {
+                setTimeout(() => {
+                    statusEl.classList.add('hidden');
+                }, 5000);
+            }
+        }
+
+        function showCorsWarning() {
+            const corsWarning = document.getElementById('corsWarning');
+            corsWarning.classList.remove('hidden');
+            showStatus('Problema de CORS detectado. Verifique as instruções abaixo.', true);
+        }
+
+        function hideCorsWarning() {
+            const corsWarning = document.getElementById('corsWarning');
+            corsWarning.classList.add('hidden');
+        }
+
+        function isLiveChannel(channel) {
+            // Critério 1: Verificar se a URL termina com .m3u8
+            if (!channel.url || !channel.url.toLowerCase().endsWith('.m3u8')) {
+                return false;
+            }
+            
+            const lowerGroup = channel.group ? channel.group.toLowerCase() : '';
+            const lowerName = channel.name ? channel.name.toLowerCase() : '';
+
+            // Critério 2: Verificar se não é VOD pelo grupo ou nome
+            for (const keyword of vodKeywords) {
+                if (lowerGroup.includes(keyword) || lowerName.includes(keyword)) {
+                    return false;
+                }
             }
 
-        } catch (error) {
-            statusDiv.textContent = `Erro: ${error.message}. Verifique o URL ou a disponibilidade do proxy.`;
-            console.error('Erro:', error);
+            // Critério 3: Verificar se não é adulto pelo grupo ou nome
+            for (const keyword of adultKeywords) {
+                if (lowerGroup.includes(keyword) || lowerName.includes(keyword)) {
+                    return false;
+                }
+            }
+            
+            return true;
         }
-    }
-</script>
 
+        function parseM3U(content) {
+            if (!content || typeof content !== 'string') {
+                throw new Error('Conteúdo M3U inválido');
+            }
+            
+            const lines = content.split('\n');
+            const channels = [];
+            let currentChannel = null;
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                
+                if (line.startsWith('#EXTINF:')) {
+                    // Extrai informações do canal
+                    const nameMatch = line.match(/,(.*)$/);
+                    const groupMatch = line.match(/group-title="([^"]*)"/);
+                    const logoMatch = line.match(/tvg-logo="([^"]*)"/);
+                    
+                    currentChannel = {
+                        name: nameMatch ? nameMatch[1] : 'Canal Sem Nome',
+                        group: groupMatch ? groupMatch[1] : 'Sem Categoria',
+                        logo: logoMatch ? logoMatch[1] : '',
+                        url: '',
+                        extinf: line
+                    };
+                } 
+                else if (line && !line.startsWith('#') && currentChannel) {
+                    // URL do canal
+                    currentChannel.url = line;
+                    channels.push({...currentChannel});
+                    currentChannel = null;
+                }
+            }
+            
+            return channels;
+        }
+
+        function generateFilteredM3U(channels) {
+            let m3uContent = '#EXTM3U\n';
+            
+            channels.forEach(channel => {
+                m3uContent += `${channel.extinf}\n`;
+                m3uContent += `${channel.url}\n`;
+            });
+            
+            return m3uContent;
+        }
+
+        function showDownloadSection(channelCount) {
+            const downloadSection = document.getElementById('downloadSection');
+            const channelCountEl = document.getElementById('channelCount');
+            
+            channelCountEl.textContent = channelCount;
+            downloadSection.classList.remove('hidden');
+        }
+
+        function hideDownloadSection() {
+            const downloadSection = document.getElementById('downloadSection');
+            downloadSection.classList.add('hidden');
+        }
+
+        async function fetchWithCORS(url) {
+            try {
+                // Tentar fetch normal primeiro
+                const response = await fetch(url);
+                if (response.ok) {
+                    return await response.text();
+                }
+            } catch (e) {
+                console.log('Fetch normal falhou, tentando alternativas...');
+            }
+            
+            // Tentar com proxy CORS público
+            const proxyUrls = [
+                'https://cors-anywhere.herokuapp.com/',
+                'https://api.allorigins.win/raw?url=',
+                'https://corsproxy.io/?'
+            ];
+            
+            for (const proxy of proxyUrls) {
+                try {
+                    const proxyUrl = proxy + encodeURIComponent(url);
+                    const response = await fetch(proxyUrl);
+                    if (response.ok) {
+                        return await response.text();
+                    }
+                } catch (e) {
+                    console.log(`Proxy ${proxy} falhou:`, e);
+                }
+            }
+            
+            throw new Error('Não foi possível acessar a URL devido a restrições de CORS');
+        }
+
+        async function filterChannels() {
+            const urlInput = document.getElementById('m3uUrl').value.trim();
+            const contentInput = document.getElementById('m3uContent').value.trim();
+            const filterBtn = document.getElementById('filterBtn');
+            
+            hideCorsWarning();
+            
+            if (activeTab === 'url' && !urlInput) {
+                showStatus('Por favor, forneça uma URL da lista M3U.', true);
+                return;
+            }
+            
+            if (activeTab === 'content' && !contentInput) {
+                showStatus('Por favor, cole o conteúdo M3U.', true);
+                return;
+            }
+            
+            // Esconder seção de download anterior
+            hideDownloadSection();
+            
+            // Desabilitar botão durante o processamento
+            filterBtn.disabled = true;
+            filterBtn.innerHTML = '<span class="loading"></span> Processando...';
+            
+            try {
+                let content = '';
+                
+                if (activeTab === 'url') {
+                    showStatus('Carregando lista M3U...', false, true);
+                    
+                    // Verificar se a URL é válida
+                    try {
+                        new URL(urlInput);
+                    } catch (e) {
+                        throw new Error('URL inválida');
+                    }
+                    
+                    content = await fetchWithCORS(urlInput);
+                    
+                    // Verificar se o conteúdo é válido
+                    if (!content || !content.includes('#EXTM3U')) {
+                        throw new Error('A lista M3U não é válida ou está vazia');
+                    }
+                } else {
+                    content = contentInput;
+                    
+                    // Verificar se o conteúdo é válido
+                    if (!content || !content.includes('#EXTM3U')) {
+                        throw new Error('O conteúdo M3U não é válido');
+                    }
+                }
+                
+                showStatus('Processando lista...', false, true);
+                
+                const allChannels = parseM3U(content);
+                
+                if (!allChannels || allChannels.length === 0) {
+                    throw new Error('Nenhum canal encontrado na lista');
+                }
+                
+                // Filtra apenas canais ao vivo (.m3u8, não VODs e não adultos)
+                filteredChannels = allChannels.filter(channel => {
+                    try {
+                        return isLiveChannel(channel);
+                    } catch (e) {
+                        console.error('Erro ao processar canal:', e);
+                        return false;
+                    }
+                });
+                
+                if (filteredChannels.length > 0) {
+                    showStatus(`Filtro concluído! ${filteredChannels.length} canais ao vivo encontrados.`);
+                    showDownloadSection(filteredChannels.length);
+                } else {
+                    showStatus('Nenhum canal ao vivo encontrado na lista.', true);
+                }
+            } catch (error) {
+                console.error('Erro detalhado:', error);
+                
+                if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+                    showCorsWarning();
+                } else {
+                    showStatus(`Erro: ${error.message}`, true);
+                }
+            } finally {
+                // Reabilitar botão
+                filterBtn.disabled = false;
+                filterBtn.innerHTML = 'Filtrar Canais ao Vivo';
+            }
+        }
+
+        function downloadFilteredM3U() {
+            if (filteredChannels.length === 0) {
+                showStatus('Nenhuma lista filtrada para baixar.', true);
+                return;
+            }
+            
+            try {
+                const m3uContent = generateFilteredM3U(filteredChannels);
+                
+                // Verificar se o conteúdo é válido
+                if (!m3uContent || m3uContent.length < 10) {
+                    throw new Error('Conteúdo da lista inválido');
+                }
+                
+                const blob = new Blob([m3uContent], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                const today = new Date().toISOString().slice(0, 10);
+                a.download = `canais_m3u8_${today}.m3u`;
+                
+                // Adicionar ao DOM, clicar e remover
+                document.body.appendChild(a);
+                a.click();
+                
+                // Limpar após um pequeno delay
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
+                
+                showStatus(`Lista M3U com ${filteredChannels.length} canais ao vivo baixada com sucesso!`);
+            } catch (error) {
+                console.error('Erro ao baixar:', error);
+                showStatus(`Erro ao baixar a lista: ${error.message}`, true);
+            }
+        }
+
+        function clearAll() {
+            document.getElementById('m3uUrl').value = '';
+            document.getElementById('m3uContent').value = '';
+            hideDownloadSection();
+            hideCorsWarning();
+            filteredChannels = [];
+            showStatus('Formulário limpo!');
+        }
+    </script>
 </body>
 </html>
