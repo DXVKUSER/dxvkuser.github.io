@@ -203,7 +203,7 @@
         <div class="filter-info">
             <h3>Critérios de Filtragem:</h3>
             <ul>
-                <li>Manter apenas canais com links terminados em <strong>.m3u8</strong></li>
+                <li>Manter apenas canais com links terminados em <strong>m3u8</strong></li>
                 <li>Ignorar VODs com extensões: <strong>.mp4, .avi, .mkv, .mov, .wmv, .flv</strong></li>
                 <li>Ignorar grupos VOD: <strong>VOD, Filmes, Séries, Cinema, etc.</strong></li>
                 <li>Ignorar grupos adultos: <strong>+18, Adulto, XXX, Canais Adultos, Porn, etc.</strong></li>
@@ -319,8 +319,8 @@
         }
 
         function isLiveChannel(channel) {
-            // Critério 1: Verificar se a URL termina com .m3u8
-            if (!channel.url || !channel.url.toLowerCase().endsWith('.m3u8')) {
+            // Critério 1: Verificar se a URL termina com m3u8
+            if (!channel.url || !channel.url.toLowerCase().endsWith('m3u8')) {
                 return false;
             }
             
@@ -498,7 +498,7 @@
                     throw new Error('Nenhum canal encontrado na lista');
                 }
                 
-                // Filtra apenas canais ao vivo (.m3u8, não VODs e não adultos)
+                // Filtra apenas canais ao vivo (m3u8, não VODs e não adultos)
                 filteredChannels = allChannels.filter(channel => {
                     try {
                         return isLiveChannel(channel);
