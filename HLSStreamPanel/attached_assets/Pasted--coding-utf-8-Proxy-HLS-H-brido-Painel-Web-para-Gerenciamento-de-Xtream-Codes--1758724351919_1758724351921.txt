@@ -1,0 +1,485 @@
+# -*- coding: utf-8 -*-
+#
+# Proxy HLS Híbrido:
+# - Painel Web para Gerenciamento de Xtream Codes
+# - Motor de Proxy HLS avançado e resiliente
+# - Lógica de API aprimorada para funcionar com mais painéis
+# - Correção de Referer para evitar interrupções de canais
+# - Lida com redirecionamentos de URL de forma robusta
+# - Exclui a lista de canais antiga antes de carregar a nova
+# - Baixa canais em grupos com filtro de conteúdo adulto
+# - Mantém logos e EPG ID dos canais
+# - Adiciona a URL do EPG (xmltv) no topo da playlist
+#
+# MELHORIAS DE RESILIÊNCIA (v2.0):
+# - Lógica de reconexão proativa ao manifesto pai em caso de falha de segmento.
+# - Contagem de erros consecutivos para evitar loops infinitos em canais offline.
+# - Parâmetros de retry e timeout ajustados para streaming em tempo real.
+# - Rastreamento de estado por canal para uma recuperação de falhas mais inteligente.
+#
+# Adaptado para Google Colab
+#
+# Dependências:
+#   pip install requests ifaddr pyngrok
+import os
+import json
+import time
+import requests
+import re
+import random
+import urllib.parse
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from urllib.parse import urlparse, parse_qs
+import socket
+import ifaddr
+import threading
+import logging
+import warnings
+from requests.adapters import HTTPAdapter
+from pyngrok import ngrok
+
+# ---------------- CONFIGURAÇÕES GLOBAIS ----------------
+
+DB_FILE = "channels_db.json"
+PORT = 8000
+MAX_RETRIES = 5
+RETRY_BACKOFF_FACTOR = 0.5
+CONNECTION_TIMEOUT = 8
+STREAM_TIMEOUT = 30.0
+DEFAULT_CHUNK_SIZE = 1024 * 16
+MAX_PORT_ATTEMPTS = 20
+MAX_CONSECUTIVE_SEGMENT_ERRORS = 5
+MAX_MANIFEST_RETRIES = 3
+LOG_FILE = "hls_proxy_hibrido.log"
+
+warnings.filterwarnings("ignore", message="Unverified HTTPS request")
+
+# Lista de palavras-chave para filtrar canais adultos
+ADULT_KEYWORDS = ["adulto", "sex", "pussy", "hard", "nude", "porn", "xxx", "erotico", "erótico", "sexo"]
+
+# Armazenamento de dados
+channels = {}
+panel_info = {"server": "", "username": "", "password": "", "channel_count": 0}
+
+# Armazenamento de estado para rastrear falhas de streaming
+stream_state = {}
+
+# Sessão HTTP persistente para melhor desempenho
+http_session = requests.Session()
+adapter = HTTPAdapter(max_retries=0)
+http_session.mount('http://', adapter)
+http_session.mount('https://', adapter)
+
+# Variável global para armazenar a URL pública
+PUBLIC_URL = ""
+
+# ---------------- FUNÇÕES DE UTILIDADE ----------------
+def setup_logging():
+    """Configura o sistema de logging."""
+    try:
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s [%(levelname)s] %(message)s',
+            handlers=[logging.FileHandler(LOG_FILE, mode='w', encoding='utf-8')]
+        )
+    except Exception:
+        logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
+
+def get_local_ip():
+    """Tenta encontrar o IP do dispositivo na rede local de uma forma robusta."""
+    try:
+        adapters = ifaddr.get_adapters()
+        for adapter in adapters:
+            for ip in adapter.ips:
+                if ip.is_IPv4 and not ip.ip.startswith("127.") and not ip.ip.startswith("169.254."):
+                    return ip.ip
+    except Exception as e:
+        print(f"Erro ao obter IP local com ifaddr: {e}")
+    
+    s = socket.socket(socket.AF_INET, SOCK_DGRAM)
+    try:
+        s.connect(('10.255.255.255', 1))
+        ip = s.getsockname()[0]
+    except Exception:
+        ip = '127.0.0.1'
+    finally:
+        s.close()
+    return ip
+
+HOST_NAME = get_local_ip()
+
+def get_forward_headers(client_headers):
+    """Encaminha alguns headers importantes e adiciona um User-Agent rotativo."""
+    chrome_version = random.randint(90, 110)
+    user_agent = f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{chrome_version}.0.0.0 Safari/537.36"
+    
+    headers = {
+        'User-Agent': user_agent,
+        'Connection': 'keep-alive',
+    }
+    if 'Authorization' in client_headers:
+        headers['Authorization'] = client_headers['Authorization']
+    if 'Cookie' in client_headers:
+        headers['Cookie'] = client_headers['Cookie']
+    
+    return headers
+
+def load_channels():
+    global channels, panel_info
+    if os.path.exists(DB_FILE):
+        with open(DB_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            channels = data.get("channels", {})
+            panel_info = data.get("panel_info", {"server": "", "username": "", "password": "", "channel_count": 0})
+            if "channel_count" not in panel_info:
+                panel_info["channel_count"] = 0
+    else:
+        channels = {}
+        panel_info = {"server": "", "username": "", "password": "", "channel_count": 0}
+    print("Canais e informações do painel carregados.")
+
+def save_channels():
+    with open(DB_FILE, "w", encoding="utf-8") as f:
+        json.dump({"channels": channels, "panel_info": panel_info}, f, indent=2, ensure_ascii=False)
+    print("Canais e informações do painel salvos.")
+
+def get_panel_html():
+    global PUBLIC_URL
+    num_channels = panel_info.get("channel_count", 0)
+    return f"""
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proxy HLS Xtream Codes</title>
+    <style>
+        body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: #f4f7f9; color: #333; }}
+        .container {{ max-width: 800px; margin: 2em auto; padding: 2em; background-color: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }}
+        h2 {{ color: #1a2533; border-bottom: 2px solid #eef; padding-bottom: 10px; }}
+        .form-container, .playlist-container {{ margin-bottom: 2em; }}
+        input[type="text"], input[type="password"] {{ width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }}
+        button {{ background-color: #007bff; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; width: 100%; }}
+        button:hover {{ background-color: #0056b3; }}
+        .playlist-download a {{ display: block; background-color: #28a745; color: white; padding: 15px 20px; text-align: center; text-decoration: none; border-radius: 4px; font-size: 18px; font-weight: bold; }}
+        .playlist-download a:hover {{ background-color: #218838; }}
+        .footer {{ text-align: center; margin-top: 2em; color: #888; }}
+        #channel-count {{ text-align: center; font-size: 1.2em; font-weight: bold; margin-bottom: 1em; color: #007bff; }}
+        .public-url {{ background-color: #f8f9fa; padding: 10px; border-radius: 4px; margin-bottom: 1em; word-break: break-all; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="playlist-container">
+            <h2>Sua Playlist de Canais</h2>
+            <p>Use o link abaixo no seu player de IPTV (VLC, Perfect Player, etc.) para carregar todos os canais.</p>
+            <div id="channel-count">Canais importados: {num_channels}</div>
+            <div class="playlist-download">
+                <a href="{PUBLIC_URL}/all_channels.m3u" target="_blank">Baixar Playlist Completa (.m3u)</a>
+            </div>
+            <br>
+            <p>URL Pública para acesso externo:</p>
+            <div class="public-url">{PUBLIC_URL}/all_channels.m3u</div>
+        </div>
+        <div class="form-container">
+            <h2>Adicionar/Atualizar Lista Xtream Codes</h2>
+            <form method="post" action="/add_xcodes">
+                <input type="text" name="server" placeholder="Servidor (ex: http://servidor.com:8080)" required>
+                <input type="text" name="username" placeholder="Usuário" required>
+                <input type="password" name="password" placeholder="Senha" required>
+                <button type="submit">Importar Canais</button>
+            </form>
+        </div>
+        <div class="footer">
+            <p>Proxy HLS Híbrido v2.0 - Adaptado para Google Colab</p>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+# ---------------- CLASSE DO SERVIDOR HTTP ----------------
+class ProxyHandler(BaseHTTPRequestHandler):
+    def _set_headers(self, status_code=200, content_type="text/html", extra_headers=None):
+        self.send_response(status_code)
+        self.send_header("Content-type", content_type)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        if extra_headers:
+            for key, value in extra_headers.items():
+                self.send_header(key, value)
+        self.end_headers()
+
+    def _fetch_url_with_retry(self, url, headers, stream=False, max_retries=MAX_RETRIES):
+        for attempt in range(max_retries):
+            try:
+                response = http_session.get(url, headers=headers, timeout=CONNECTION_TIMEOUT, verify=False, stream=stream)
+                response.raise_for_status()
+                return response
+            except requests.exceptions.RequestException as e:
+                if isinstance(e, requests.exceptions.HTTPError) and 400 <= e.response.status_code < 500 and e.response.status_code != 429:
+                    logging.warning(f"Erro de cliente {e.response.status_code} ao buscar {url}. Não haverá nova tentativa.")
+                    return e.response
+                logging.warning(f"Erro de conexão/servidor em {url}: {e}. Tentativa {attempt + 1}/{max_retries}.")
+            
+            if attempt < max_retries - 1:
+                wait_time = (2 ** attempt) * RETRY_BACKOFF_FACTOR + random.uniform(0, 0.5)
+                time.sleep(wait_time)
+        return None
+
+    def _proxy_segment_with_reconnect(self, segment_url, cid):
+        global stream_state
+        
+        if cid not in stream_state:
+            stream_state[cid] = {'consecutive_errors': 0}
+
+        response = self._fetch_url_with_retry(segment_url, headers=get_forward_headers(self.headers), stream=True, max_retries=2)
+        
+        if response and response.ok:
+            stream_state[cid]['consecutive_errors'] = 0
+            
+            response_headers = {k: v for k, v in response.headers.items() if k.lower() not in ['content-encoding', 'transfer-encoding', 'connection']}
+            self._set_headers(response.status_code, response.headers.get("content-type", "application/octet-stream"), response_headers)
+            try:
+                for chunk in response.iter_content(chunk_size=DEFAULT_CHUNK_SIZE):
+                    self.wfile.write(chunk)
+            except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+                logging.warning("Cliente fechou a conexão durante o streaming do segmento.")
+            return
+
+        stream_state[cid]['consecutive_errors'] += 1
+        logging.error(f"Falha ao buscar segmento para canal {cid} (Erro {stream_state[cid]['consecutive_errors']}/{MAX_CONSECUTIVE_SEGMENT_ERRORS}). URL: {segment_url}")
+
+        if stream_state[cid]['consecutive_errors'] >= MAX_CONSECUTIVE_SEGMENT_ERRORS:
+            logging.error(f"Canal {cid} atingiu o limite de erros consecutivos. Retornando 502 Bad Gateway.")
+            self._set_headers(502, "text/plain")
+            self.wfile.write(b"Nao foi possivel obter o recurso apos varias tentativas (limite de erros atingido).")
+            return
+
+        parent_manifest_url = channels.get(cid, {}).get("url")
+        if not parent_manifest_url:
+            logging.error(f"URL do manifesto pai não encontrada para o canal {cid}.")
+            self._set_headers(502, "text/plain"); self.wfile.write(b"Erro interno: URL do canal nao encontrada para reconexao."); return
+        
+        logging.info(f"Tentando reconexão forçada para o canal {cid} buscando o manifesto pai: {parent_manifest_url}")
+        self._fetch_url_with_retry(parent_manifest_url, headers=get_forward_headers(self.headers), max_retries=1)
+        
+        logging.info(f"Retentando buscar o segmento original para o canal {cid}...")
+        retry_response = self._fetch_url_with_retry(segment_url, headers=get_forward_headers(self.headers), stream=True, max_retries=1)
+        
+        if retry_response and retry_response.ok:
+            logging.info(f"Sucesso na recuperação do segmento para o canal {cid}!")
+            stream_state[cid]['consecutive_errors'] = 0
+            
+            response_headers = {k: v for k, v in retry_response.headers.items() if k.lower() not in ['content-encoding', 'transfer-encoding', 'connection']}
+            self._set_headers(retry_response.status_code, retry_response.headers.get("content-type", "application/octet-stream"), response_headers)
+            try:
+                for chunk in retry_response.iter_content(chunk_size=DEFAULT_CHUNK_SIZE):
+                    self.wfile.write(chunk)
+            except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+                logging.warning("Cliente fechou a conexão durante o streaming do segmento recuperado.")
+        else:
+            logging.error(f"Falha final ao buscar segmento para {cid} mesmo após reconexão.")
+            self._set_headers(502, "text/plain")
+            self.wfile.write(b"Nao foi possivel obter o recurso apos a tentativa de reconexao.")
+            
+    def _proxy_key(self, key_url):
+        response = self._fetch_url_with_retry(key_url, headers=get_forward_headers(self.headers), stream=True)
+        if response and response.ok:
+            response_headers = {k: v for k, v in response.headers.items() if k.lower() not in ['content-encoding', 'transfer-encoding', 'connection']}
+            self._set_headers(response.status_code, response.headers.get("content-type", "application/octet-stream"), response_headers)
+            try:
+                self.wfile.write(response.content)
+            except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+                logging.warning("Cliente fechou a conexão durante o streaming da chave.")
+        else:
+            self._set_headers(502, "text/plain")
+            self.wfile.write(b"Nao foi possivel obter a chave de criptografia.")
+
+    def _rewrite_playlist(self, playlist_content, base_url, cid):
+        global PUBLIC_URL
+        new_lines = []
+        for line in playlist_content.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            
+            if line.startswith("#EXT-X-KEY"):
+                uri_match = re.search(r'URI="([^"]+)"', line)
+                if uri_match:
+                    key_url = urllib.parse.urljoin(base_url, uri_match.group(1))
+                    proxied_key_url = f"{PUBLIC_URL}/key?url={urllib.parse.quote_plus(key_url)}"
+                    line = line.replace(uri_match.group(1), proxied_key_url)
+            elif not line.startswith("#"):
+                segment_url = urllib.parse.urljoin(base_url, line)
+                proxied_segment_url = f"{PUBLIC_URL}/segment/{cid}?url={urllib.parse.quote_plus(segment_url)}"
+                line = proxied_segment_url
+            
+            new_lines.append(line)
+        
+        return "\n".join(new_lines)
+
+    def do_GET(self):
+        global PUBLIC_URL
+        parsed_path = urlparse(self.path)
+        query_params = parse_qs(parsed_path.query)
+        try:
+            if parsed_path.path == "/":
+                self._set_headers()
+                self.wfile.write(get_panel_html().encode("utf-8"))
+
+            elif parsed_path.path == "/all_channels.m3u":
+                epg_url = ""
+                if panel_info.get("server") and panel_info.get("username") and panel_info.get("password"):
+                    parsed_server = urlparse(panel_info["server"])
+                    epg_url = f"http://{parsed_server.netloc}/xmltv.php?username={panel_info['username']}&password={panel_info['password']}"
+                
+                playlist_data = f'#EXTM3U x-tvg-url="{epg_url}"\n'
+                sorted_channels = sorted(channels.items(), key=lambda item: (item[1].get('group_title', 'zzz'), item[1].get('name', '')))
+                
+                for cid, cdata in sorted_channels:
+                    group_title = cdata.get('group_title', 'Outros Canais')
+                    channel_name = cdata.get('name', 'Canal Desconhecido')
+                    tvg_id = cdata.get('tvg_id', '')
+                    tvg_logo = cdata.get('tvg_logo', '')
+                    
+                    playlist_data += f'#EXTINF:-1 tvg-id="{tvg_id}" tvg-name="{channel_name}" tvg-logo="{tvg_logo}" group-title="{group_title}",{channel_name}\n'
+                    playlist_data += f"{PUBLIC_URL}/play/{cid}.m3u8\n"
+                
+                self._set_headers(content_type="audio/x-mpegurl", extra_headers={"Content-Disposition": "attachment; filename=\"playlist.m3u\""})
+                self.wfile.write(playlist_data.encode("utf-8"))
+
+            elif parsed_path.path.startswith("/play/"):
+                cid = os.path.basename(parsed_path.path).split('.')[0]
+                target_url = channels.get(cid, {}).get("url")
+                if not target_url:
+                    self._set_headers(404, "text/plain"); self.wfile.write(b"Canal nao encontrado!"); return
+                
+                if cid in stream_state:
+                    stream_state[cid]['consecutive_errors'] = 0
+                
+                response = self._fetch_url_with_retry(target_url, headers=get_forward_headers(self.headers), max_retries=MAX_MANIFEST_RETRIES)
+                if not response or not response.ok:
+                    self._set_headers(response.status_code if response else 502, "text/plain")
+                    self.wfile.write(b"Nao foi possivel buscar a playlist principal do canal.")
+                    return
+                
+                final_playlist = self._rewrite_playlist(response.text, response.url, cid)
+                
+                self._set_headers(content_type="application/vnd.apple.mpegurl")
+                self.wfile.write(final_playlist.encode("utf-8"))
+
+            elif parsed_path.path.startswith("/segment/"):
+                parts = parsed_path.path.split('/')
+                if len(parts) < 3:
+                    self._set_headers(400, "text/plain"); self.wfile.write(b"URL de segmento mal formada."); return
+                cid = parts[2]
+                url = query_params.get("url", [None])[0]
+                if not url: self._set_headers(400, "text/plain"); self.wfile.write(b"Parametro 'url' ausente"); return
+                self._proxy_segment_with_reconnect(urllib.parse.unquote_plus(url), cid)
+
+            elif parsed_path.path == "/key":
+                url = query_params.get("url", [None])[0]
+                if not url: self._set_headers(400, "text/plain"); self.wfile.write(b"Parametro 'url' ausente"); return
+                self._proxy_key(urllib.parse.unquote_plus(url))
+
+            else:
+                self._set_headers(404, "text/plain")
+                self.wfile.write(b"Nao Encontrado")
+
+        except BrokenPipeError: pass
+        except Exception as e: 
+            logging.error(f"Erro inesperado no servidor: {e}", exc_info=True)
+            if not self.headers_sent:
+                self._set_headers(500, "text/plain")
+                self.wfile.write(b"Erro interno do servidor.")
+
+    def do_HEAD(self):
+        self.do_GET()
+
+    def do_POST(self):
+        parsed_path = urlparse(self.path)
+        if parsed_path.path == "/add_xcodes":
+            try:
+                content_length = int(self.headers['Content-Length'])
+                post_data = self.rfile.read(content_length).decode("utf-8")
+                post_params = parse_qs(post_data)
+                server, username, password = [post_params.get(k, [""])[0].strip() for k in ["server", "username", "password"]]
+                if not all([server, username, password]): self._set_headers(400, "text/plain"); self.wfile.write(b"Dados incompletos."); return
+                
+                global panel_info
+                panel_info.update({"server": server, "username": username, "password": password})
+                
+                api_headers = {'User-Agent': 'VLC/3.0.20 LibVLC/3.0.20', 'Accept': '*/*', 'Connection': 'keep-alive'}
+                api_url = f"{server}/player_api.php?username={username}&password={password}"
+                
+                r = self._fetch_url_with_retry(api_url + "&action=get_live_streams", headers=api_headers)
+                if not r or not r.ok: 
+                    self._set_headers(r.status_code if r else 500, "text/plain"); self.wfile.write(b"Falha ao buscar canais"); return
+                
+                try: streams = r.json()
+                except json.JSONDecodeError:
+                    self._set_headers(500, "text/plain"); self.wfile.write(b"Resposta de canais invalida. Verifique a URL do servidor."); return
+                
+                r_groups = self._fetch_url_with_retry(api_url + "&action=get_live_categories", headers=api_headers)
+                groups = {}
+                if r_groups and r_groups.ok:
+                    try: groups = {str(g.get("category_id")): g.get("category_name") for g in r_groups.json()}
+                    except json.JSONDecodeError: logging.warning("Falha ao decodificar grupos.")
+                
+                channels.clear()
+                added = 0
+                for s in streams:
+                    if s.get('stream_type') != 'live' or not s.get("stream_id"): continue
+                    
+                    name = s.get("name", f"Canal {s['stream_id']}")
+                    group_name = groups.get(str(s.get("category_id")), 'Sem Grupo')
+                    
+                    if any(keyword in name.lower() or keyword in group_name.lower() for keyword in ADULT_KEYWORDS): continue
+                    
+                    cid = str(s["stream_id"])
+                    channels[cid] = {
+                        "name": name, 
+                        "url": f"{server}/live/{username}/{password}/{cid}.m3u8", 
+                        "group_title": group_name,
+                        "tvg_id": s.get("tvg_id", ""),
+                        "tvg_logo": s.get("stream_icon", "")
+                    }
+                    added += 1
+                
+                panel_info["channel_count"] = added
+                save_channels()
+                self.send_response(303)
+                self.send_header('Location', '/')
+                self.end_headers()
+
+            except Exception as e:
+                logging.error(f"Erro ao processar POST: {e}", exc_info=True)
+                self._set_headers(500, "text/plain")
+                self.wfile.write(f"Ocorreu um erro: {e}".encode("utf-8"))
+        else:
+            self._set_headers(404, "text/plain")
+            self.wfile.write(b"Nao Encontrado")
+
+def start_server():
+    global PUBLIC_URL
+    setup_logging()
+    load_channels()
+    
+    # Iniciar túnel ngrok
+    public_url = ngrok.connect(PORT).public_url
+    PUBLIC_URL = public_url
+    print(f"Servidor Proxy Híbrido iniciado em {public_url}")
+    
+    server = HTTPServer(('', PORT), ProxyHandler)
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
+        ngrok.disconnect(public_url)
+        ngrok.kill()
+        print("\nServidor parado.")
+
+if __name__ == "__main__":
+    start_server()
