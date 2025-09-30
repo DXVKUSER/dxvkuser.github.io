@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filtro de Canais ao Vivo IPTV (Xcodes)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            flex-grow: 1;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button.download-btn {
+            background-color: #2196F3;
+        }
+        button.download-btn:hover {
+            background-color: #0b7dda;
+        }
+        button.clear-btn {
+            background-color: #f44336;
+        }
+        button.clear-btn:hover {
+            background-color: #d32f2f;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .hidden {
+            display: none;
+        }
+        .download-section {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #e3f2fd;
+            border-radius: 8px;
+            border: 2px dashed #2196F3;
+        }
+        .download-section p {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            color: #333;
+        }
+        .download-section button {
+            font-size: 18px;
+            padding: 12px 30px;
+        }
+        .filter-info {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        .filter-info h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+        .filter-info ul {
+            margin-bottom: 0;
+            padding-left: 20px;
+        }
+        .filter-info li {
+            color: #856404;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .processing {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        .cors-warning {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .cors-warning h3 {
+            margin-top: 0;
+            color: #721c24;
+        }
+        .cors-warning p {
+            margin-bottom: 10px;
+            color: #721c24;
+        }
+        .cors-warning ol {
+            margin-top: 0;
+            padding-left: 20px;
+        }
+        .cors-warning li {
+            color: #721c24;
+            margin-bottom: 5px;
+        }
+        .tab-container {
+            margin-bottom: 15px;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #f1f1f1;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            margin-right: 5px;
+            border-radius: 4px 4px 0 0;
+        }
+        .tab.active {
+            background-color: white;
+            border-bottom: 1px solid white;
+            margin-bottom: -1px;
+        }
+        .tab-content {
+            display: none;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Filtro de Canais ao Vivo IPTV (Xcodes)</h1>
+        
+        <div class="filter-info">
+            <h3>Critérios de Filtragem:</h3>
+            <ul>
+                <li>**Correção Aplicada:** Manter canais do grupo Live, ignorando a extensão final do link.</li>
+                <li>Ignorar links com extensões de **VOD** (filmes/séries): **.mp4, .avi, .mkv, .mov, .wmv, .flv**</li>
+                <li>Ignorar grupos e nomes adultos: **+18, Adulto, XXX, Canais Adultos, Porn, etc.**</li>
+                <li>Adiciona a URL do **EPG (Guia)** no topo da lista M3U.</li>
+            </ul>
+        </div>
+        
+        <div class="cors-warning hidden" id="corsWarning">
+            <h3>Problema de Acesso à URL Detectado</h3>
+            <p>Não foi possível acessar o servidor Xcodes diretamente devido a restrições de segurança do navegador (CORS). Por favor, use uma das alternativas abaixo:</p>
+            <ol>
+                <li>**Opção 1:** Use uma extensão de navegador como "CORS Unblock" ou "Allow CORS"</li>
+                <li>**Opção 2:** Se o problema persistir, baixe a lista M3U completa manualmente e cole o conteúdo na aba "Conteúdo M3U"</li>
+            </ol>
+        </div>
+        
+        <div class="tab-container">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('xcodes')">Credenciais Xcodes</div>
+                <div class="tab" onclick="switchTab('content')">Conteúdo M3U</div>
+            </div>
+            
+            <div id="xcodesTab" class="tab-content active">
+                <div class="input-group">
+                    <label for="serverUrl">Host/URL do Servidor (Ex: http://servidor.com:8080):</label>
+                    <input type="text" id="serverUrl" placeholder="Cole o Host do servidor Xcodes aqui" 
+                           value="">
+                </div>
+                <div class="input-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" placeholder="Seu nome de usuário" 
+                           value="">
+                </div>
+                <div class="input-group">
+                    <label for="password">Password:</label>
+                    <input type="text" id="password" placeholder="Sua senha" 
+                           value="">
+                </div>
+            </div>
+            
+            <div id="contentTab" class="tab-content">
+                <div class="input-group">
+                    <label for="m3uContent">Cole o conteúdo M3U diretamente (Se a conexão Xcodes falhar):</label>
+                    <textarea id="m3uContent" rows="12" placeholder="Cole o conteúdo da lista M3U aqui"></textarea>
+                </div>
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button onclick="filterChannels()" id="filterBtn">Filtrar Canais ao Vivo</button>
+            <button onclick="clearAll()" class="clear-btn">Limpar</button>
+        </div>
+        
+        <div id="status" class="status hidden"></div>
+        
+        <div id="downloadSection" class="download-section hidden">
+            <p id="downloadInfo">Lista M3U filtrada com <span id="channelCount">0</span> canais ao vivo e EPG adicionado:</p>
+            <button id="downloadBtn" class="download-btn" onclick="downloadFilteredM3U()">
+                Baixar Lista M3U Filtrada
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Palavras-chave para identificar canais adultos
+        const adultKeywords = [
+            '+18', 'adulto', 'adultos', 'xxx', 'porn', 'erotico', 'hot', 'sexo'
+        ];
+
+        // Extensões de arquivo para ignorar (VODs)
+        const vodExtensions = [
+            '.mp4', '.avi', '.mkv', '.mov', '.wmv', '.flv'
+        ];
+
+        let filteredChannels = [];
+        let epgUrl = ''; 
+        let activeTab = 'xcodes';
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            if (tab === 'xcodes') {
+                document.querySelector('.tab:first-child').classList.add('active');
+                document.getElementById('xcodesTab').classList.add('active');
+                activeTab = 'xcodes';
+            } else {
+                document.querySelector('.tab:last-child').classList.add('active');
+                document.getElementById('contentTab').classList.add('active');
+                activeTab = 'content';
+            }
+            hideCorsWarning();
+        }
+
+        function showStatus(message, isError = false, isProcessing = false) {
+            const statusEl = document.getElementById('status');
+            statusEl.innerHTML = isProcessing ? `<span class="loading"></span> ${message}` : message;
+            statusEl.className = `status ${isError ? 'error' : isProcessing ? 'processing' : 'success'}`;
+            statusEl.classList.remove('hidden');
+            
+            if (!isProcessing) {
+                setTimeout(() => {
+                    statusEl.classList.add('hidden');
+                }, 7000);
+            }
+        }
+
+        function showCorsWarning() {
+            const corsWarning = document.getElementById('corsWarning');
+            corsWarning.classList.remove('hidden');
+            showStatus('Problema de CORS detectado. Verifique as instruções abaixo.', true);
+        }
+
+        function hideCorsWarning() {
+            const corsWarning = document.getElementById('corsWarning');
+            corsWarning.classList.add('hidden');
+        }
+
+        function isLiveChannel(channel) {
+            // **CORREÇÃO APLICADA AQUI**
+            
+            // 1. Ignorar se for VOD (Verifica se o link contém extensões de VOD)
+            // A lista M3U de Xtream Codes mistura canais e VODs dependendo do link de busca.
+            // Se o link de um item contém uma extensão de VOD (mp4, mkv, etc.), ignoramos.
+            for (const ext of vodExtensions) {
+                if (channel.url.toLowerCase().includes(ext)) {
+                    return false;
+                }
+            }
+            
+            // 2. Ignorar canais adultos (pelo grupo ou nome)
+            const lowerGroup = channel.group ? channel.group.toLowerCase() : '';
+            const lowerName = channel.name ? channel.name.toLowerCase() : '';
+
+            for (const keyword of adultKeywords) {
+                if (lowerGroup.includes(keyword) || lowerName.includes(keyword)) {
+                    return false;
+                }
+            }
+
+            // 3. Garantir que é um canal Live
+            // No Xtream Codes, se o link não é um VOD ou Adulto, ele deve ser um canal Live
+            // se a lista M3U original foi buscada com output=m3u8 (o que estamos fazendo).
+            // A URL de playback live Xcodes geralmente é: http://host/live/user/pass/stream_id.ts
+            // A terminação não é .m3u8, mas sim .ts (ou nada), então removemos a verificação rígida do .m3u8
+            // e focamos na exclusão de VOD e Adulto para manter o restante como Live.
+            
+            // Critério final: Se não é VOD e não é adulto, é considerado um canal de TV (Live).
+            return true;
+        }
+
+        function parseM3U(content) {
+            if (!content || typeof content !== 'string') {
+                throw new Error('Conteúdo M3U inválido');
+            }
+            
+            const lines = content.split('\n');
+            const channels = [];
+            let currentChannel = null;
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                
+                if (line.startsWith('#EXTINF:')) {
+                    const nameMatch = line.match(/,(.*)$/);
+                    const groupMatch = line.match(/group-title="([^"]*)"/);
+                    const logoMatch = line.match(/tvg-logo="([^"]*)"/);
+                    const tvgIdMatch = line.match(/tvg-id="([^"]*)"/); // Captura o ID do EPG
+
+                    currentChannel = {
+                        name: nameMatch ? nameMatch[1] : 'Canal Sem Nome',
+                        group: groupMatch ? groupMatch[1] : 'Sem Categoria',
+                        logo: logoMatch ? logoMatch[1] : '',
+                        tvgId: tvgIdMatch ? tvgIdMatch[1] : '', // Novo campo
+                        url: '',
+                        extinf: line // Mantém a linha EXTINF completa
+                    };
+                } 
+                else if (line && !line.startsWith('#') && currentChannel) {
+                    currentChannel.url = line;
+                    channels.push({...currentChannel});
+                    currentChannel = null;
+                }
+            }
+            
+            return channels;
+        }
+
+        function generateFilteredM3U(channels, epgUrl) {
+            let m3uContent = '#EXTM3U';
+            
+            // Adiciona o EPG no cabeçalho
+            if (epgUrl) {
+                m3uContent += ` url-tvg="${epgUrl}"\n`;
+            } else {
+                m3uContent += '\n';
+            }
+            
+            channels.forEach(channel => {
+                // Adiciona a linha #EXTINF e a URL do canal
+                m3uContent += `${channel.extinf}\n`; // Já inclui tvg-id e logo
+                m3uContent += `${channel.url}\n`;
+            });
+            
+            return m3uContent;
+        }
+
+        function showDownloadSection(channelCount) {
+            const downloadSection = document.getElementById('downloadSection');
+            const channelCountEl = document.getElementById('channelCount');
+            
+            channelCountEl.textContent = channelCount;
+            downloadSection.classList.remove('hidden');
+        }
+
+        function hideDownloadSection() {
+            const downloadSection = document.getElementById('downloadSection');
+            downloadSection.classList.add('hidden');
+        }
+
+        async function fetchWithCORS(url) {
+            // Tenta fetch normal
+            try {
+                const response = await fetch(url);
+                if (response.ok) {
+                    return await response.text();
+                }
+            } catch (e) {
+                console.log('Fetch normal falhou, tentando alternativas (CORS Proxy)...');
+            }
+            
+            // Lista de proxies CORS
+            const proxyUrls = [
+                'https://corsproxy.io/?',
+                'https://api.allorigins.win/raw?url=',
+                'https://cors-anywhere.herokuapp.com/'
+            ];
+            
+            for (const proxy of proxyUrls) {
+                try {
+                    const proxyUrl = proxy + encodeURIComponent(url);
+                    const response = await fetch(proxyUrl);
+                    if (response.ok) {
+                        return await response.text();
+                    }
+                } catch (e) {
+                    console.log(`Proxy ${proxy} falhou:`, e);
+                }
+            }
+            
+            throw new Error('Não foi possível acessar a URL devido a restrições de CORS');
+        }
+
+        function buildXcodesUrls(server, username, password) {
+            // Remove barras finais redundantes do server URL
+            server = server.replace(/\/+$/, '');
+            
+            // URL da lista M3U (Canais Live)
+            const m3uUrl = `${server}/get.php?username=${username}&password=${password}&type=m3u_plus&output=m3u8`;
+            
+            // URL do EPG
+            const epgLink = `${server}/xmltv.php?username=${username}&password=${password}`;
+
+            epgUrl = epgLink; 
+            
+            return { m3uUrl, epgLink };
+        }
+
+        async function filterChannels() {
+            const serverUrl = document.getElementById('serverUrl').value.trim();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const contentInput = document.getElementById('m3uContent').value.trim();
+            const filterBtn = document.getElementById('filterBtn');
+            
+            hideCorsWarning();
+            hideDownloadSection();
+            
+            let content = '';
+            
+            if (activeTab === 'xcodes') {
+                if (!serverUrl || !username || !password) {
+                    showStatus('Por favor, preencha todos os campos de credenciais Xcodes.', true);
+                    return;
+                }
+
+                try {
+                    // 1. Monta as URLs Xcodes
+                    const urls = buildXcodesUrls(serverUrl, username, password);
+                    
+                    // 2. Faz o fetch da lista M3U
+                    showStatus('Carregando lista M3U do servidor Xcodes...', false, true);
+                    filterBtn.disabled = true;
+                    filterBtn.innerHTML = '<span class="loading"></span> Processando...';
+
+                    content = await fetchWithCORS(urls.m3uUrl);
+                    
+                    if (!content || !content.includes('#EXTM3U')) {
+                        throw new Error('A lista M3U retornada não é válida ou está vazia. Verifique suas credenciais.');
+                    }
+                } catch (error) {
+                    console.error('Erro ao buscar do Xcodes:', error);
+                    if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+                        showCorsWarning();
+                    } else {
+                        showStatus(`Erro ao buscar a lista: ${error.message}. Verifique o Host/URL e as credenciais.`, true);
+                    }
+                    filterBtn.disabled = false;
+                    filterBtn.innerHTML = 'Filtrar Canais ao Vivo';
+                    return;
+                }
+            } else { // Tab 'content'
+                if (!contentInput) {
+                    showStatus('Por favor, cole o conteúdo M3U.', true);
+                    return;
+                }
+                content = contentInput;
+                if (!content || !content.includes('#EXTM3U')) {
+                    showStatus('O conteúdo M3U não é válido.', true);
+                    return;
+                }
+                epgUrl = ''; 
+                filterBtn.disabled = true;
+                filterBtn.innerHTML = '<span class="loading"></span> Processando...';
+            }
+            
+            try {
+                showStatus('Processando e filtrando canais Live...', false, true);
+                
+                const allChannels = parseM3U(content);
+                
+                if (!allChannels || allChannels.length === 0) {
+                    throw new Error('Nenhum canal encontrado na lista, lista M3U vazia.');
+                }
+                
+                // Filtra os canais usando a lógica corrigida
+                filteredChannels = allChannels.filter(channel => {
+                    try {
+                        return isLiveChannel(channel);
+                    } catch (e) {
+                        console.error('Erro ao processar canal:', e);
+                        return false;
+                    }
+                });
+                
+                if (filteredChannels.length > 0) {
+                    showStatus(`Filtro concluído! **${filteredChannels.length} canais Live** encontrados. Pronto para baixar.`);
+                    showDownloadSection(filteredChannels.length);
+                } else {
+                    showStatus('**Nenhum canal Live encontrado** após a filtragem. Verifique se o conteúdo da sua lista é de canais de TV (e não apenas VOD).', true);
+                }
+            } catch (error) {
+                console.error('Erro detalhado:', error);
+                showStatus(`Erro de processamento: ${error.message}`, true);
+            } finally {
+                filterBtn.disabled = false;
+                filterBtn.innerHTML = 'Filtrar Canais ao Vivo';
+            }
+        }
+
+        function downloadFilteredM3U() {
+            if (filteredChannels.length === 0) {
+                showStatus('Nenhuma lista filtrada para baixar.', true);
+                return;
+            }
+            
+            try {
+                // Passa a URL do EPG gerada na fase de filtragem
+                const m3uContent = generateFilteredM3U(filteredChannels, epgUrl); 
+                
+                if (!m3uContent || m3uContent.length < 10) {
+                    throw new Error('Conteúdo da lista inválido');
+                }
+                
+                const blob = new Blob([m3uContent], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                const today = new Date().toISOString().slice(0, 10);
+                a.download = `canais_live_filtrados_xcodes_${today}.m3u`;
+                
+                document.body.appendChild(a);
+                a.click();
+                
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
+                
+                showStatus(`Lista M3U com ${filteredChannels.length} canais ao vivo baixada com sucesso!`);
+            } catch (error) {
+                console.error('Erro ao baixar:', error);
+                showStatus(`Erro ao baixar a lista: ${error.message}`, true);
+            }
+        }
+
+        function clearAll() {
+            document.getElementById('serverUrl').value = '';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('m3uContent').value = '';
+            hideDownloadSection();
+            hideCorsWarning();
+            filteredChannels = [];
+            epgUrl = '';
+            showStatus('Formulário limpo!');
+        }
+    </script>
+</body>
+</html>
