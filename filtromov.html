@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filtro de Filmes (VOD) IPTV (Xcodes)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            flex-grow: 1;
+        }
+        button:hover {
+            background-color: #0069d9;
+        }
+        button.download-btn {
+            background-color: #2196F3;
+        }
+        button.download-btn:hover {
+            background-color: #0b7dda;
+        }
+        button.clear-btn {
+            background-color: #f44336;
+        }
+        button.clear-btn:hover {
+            background-color: #d32f2f;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .hidden {
+            display: none;
+        }
+        .download-section {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #e3f2fd;
+            border-radius: 8px;
+            border: 2px dashed #2196F3;
+        }
+        .download-section p {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            color: #333;
+        }
+        .download-section button {
+            font-size: 18px;
+            padding: 12px 30px;
+        }
+        .filter-info {
+            background-color: #e3f2fd;
+            border: 1px solid #bde5f8;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        .filter-info h3 {
+            margin-top: 0;
+            color: #0c5460;
+        }
+        .filter-info ul {
+            margin-bottom: 0;
+            padding-left: 20px;
+        }
+        .filter-info li {
+            color: #0c5460;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .processing {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        .cors-warning {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .cors-warning h3 {
+            margin-top: 0;
+            color: #721c24;
+        }
+        .cors-warning p {
+            margin-bottom: 10px;
+            color: #721c24;
+        }
+        .cors-warning ol {
+            margin-top: 0;
+            padding-left: 20px;
+        }
+        .cors-warning li {
+            color: #721c24;
+            margin-bottom: 5px;
+        }
+        .tab-container {
+            margin-bottom: 15px;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #f1f1f1;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            margin-right: 5px;
+            border-radius: 4px 4px 0 0;
+        }
+        .tab.active {
+            background-color: white;
+            border-bottom: 1px solid white;
+            margin-bottom: -1px;
+        }
+        .tab-content {
+            display: none;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Filtro de Filmes (VOD) IPTV (Xcodes)</h1>
+        
+        <div class="filter-info">
+            <h3>Critérios de Filtragem:</h3>
+            <ul>
+                <li>Manter apenas itens que são **Filmes (VOD)**.</li>
+                <li>Ignorar completamente **Canais ao Vivo (Live)**.</li>
+                <li>Ignorar completamente **Séries (VOD)**.</li>
+                <li>Ignorar grupos e nomes adultos: **+18, Adulto, XXX, etc.**</li>
+            </ul>
+        </div>
+        
+        <div class="cors-warning hidden" id="corsWarning">
+            <h3>Problema de Acesso à URL Detectado</h3>
+            <p>Não foi possível acessar o servidor Xcodes diretamente devido a restrições de segurança do navegador (CORS). Por favor, use uma das alternativas abaixo:</p>
+            <ol>
+                <li>**Opção 1:** Use uma extensão de navegador como "CORS Unblock" ou "Allow CORS"</li>
+                <li>**Opção 2:** Se o problema persistir, baixe a lista M3U completa manualmente e cole o conteúdo na aba "Conteúdo M3U"</li>
+            </ol>
+        </div>
+        
+        <div class="tab-container">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('xcodes')">Credenciais Xcodes</div>
+                <div class="tab" onclick="switchTab('content')">Conteúdo M3U</div>
+            </div>
+            
+            <div id="xcodesTab" class="tab-content active">
+                <div class="input-group">
+                    <label for="serverUrl">Host/URL do Servidor (Ex: http://servidor.com:8080):</label>
+                    <input type="text" id="serverUrl" placeholder="Cole o Host do servidor Xcodes aqui">
+                </div>
+                <div class="input-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" placeholder="Seu nome de usuário">
+                </div>
+                <div class="input-group">
+                    <label for="password">Password:</label>
+                    <input type="text" id="password" placeholder="Sua senha">
+                </div>
+            </div>
+            
+            <div id="contentTab" class="tab-content">
+                <div class="input-group">
+                    <label for="m3uContent">Cole o conteúdo M3U diretamente (Se a conexão Xcodes falhar):</label>
+                    <textarea id="m3uContent" rows="12" placeholder="Cole o conteúdo da lista M3U aqui"></textarea>
+                </div>
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button onclick="filterContent()" id="filterBtn">Filtrar Filmes (VOD)</button>
+            <button onclick="clearAll()" class="clear-btn">Limpar</button>
+        </div>
+        
+        <div id="status" class="status hidden"></div>
+        
+        <div id="downloadSection" class="download-section hidden">
+            <p id="downloadInfo">Lista M3U filtrada com <span id="movieCount">0</span> filmes encontrada:</p>
+            <button id="downloadBtn" class="download-btn" onclick="downloadFilteredM3U()">
+                Baixar Lista M3U de Filmes
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const adultKeywords = ['+18', 'adulto', 'adultos', 'xxx', 'porn', 'erotico', 'hot', 'sexo'];
+        const vodExtensions = ['.mp4', '.avi', '.mkv', '.mov', '.wmv', '.flv'];
+        const seriesKeywords = ['série', 'series', 'temporada', 'season'];
+
+        let filteredMovies = [];
+        let activeTab = 'xcodes';
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            if (tab === 'xcodes') {
+                document.querySelector('.tab:first-child').classList.add('active');
+                document.getElementById('xcodesTab').classList.add('active');
+                activeTab = 'xcodes';
+            } else {
+                document.querySelector('.tab:last-child').classList.add('active');
+                document.getElementById('contentTab').classList.add('active');
+                activeTab = 'content';
+            }
+            hideCorsWarning();
+        }
+
+        function showStatus(message, isError = false, isProcessing = false) {
+            const statusEl = document.getElementById('status');
+            statusEl.innerHTML = isProcessing ? `<span class="loading"></span> ${message}` : message;
+            statusEl.className = `status ${isError ? 'error' : isProcessing ? 'processing' : 'success'}`;
+            statusEl.classList.remove('hidden');
+            
+            if (!isProcessing) {
+                setTimeout(() => {
+                    statusEl.classList.add('hidden');
+                }, 7000);
+            }
+        }
+
+        function showCorsWarning() {
+            const corsWarning = document.getElementById('corsWarning');
+            corsWarning.classList.remove('hidden');
+            showStatus('Problema de CORS detectado. Verifique as instruções.', true);
+        }
+
+        function hideCorsWarning() {
+            const corsWarning = document.getElementById('corsWarning');
+            corsWarning.classList.add('hidden');
+        }
+        
+        function isVodMovie(item) {
+            const url = item.url.toLowerCase();
+            const group = item.group ? item.group.toLowerCase() : '';
+            const name = item.name ? item.name.toLowerCase() : '';
+
+            // CRITÉRIO 1: EXCLUIR CANAIS AO VIVO E SÉRIES PELA ESTRUTURA DA URL
+            if (url.includes('/live/') || url.includes('/series/')) {
+                return false;
+            }
+
+            // CRITÉRIO 2: EXCLUIR SÉRIES PELO TÍTULO DO GRUPO OU NOME
+            for (const keyword of seriesKeywords) {
+                if (group.includes(keyword) || name.includes(keyword)) {
+                    return false;
+                }
+            }
+            // Exclui padrões comuns de episódios de séries (ex: "S01E02")
+            if (/\sS[0-9]{1,2}E[0-9]{1,2}/i.test(name)) {
+                return false;
+            }
+
+            // CRITÉRIO 3: EXCLUIR CONTEÚDO ADULTO
+            for (const keyword of adultKeywords) {
+                if (group.includes(keyword) || name.includes(keyword)) {
+                    return false;
+                }
+            }
+
+            // CRITÉRIO 4: INCLUIR APENAS SE FOR UM FILME
+            // Para ser um filme, a URL deve conter '/movie/' ou ter uma extensão de vídeo.
+            const isMovieUrl = url.includes('/movie/');
+            let isVodExtension = false;
+            for (const ext of vodExtensions) {
+                if (url.endsWith(ext)) {
+                    isVodExtension = true;
+                    break;
+                }
+            }
+            
+            // Se não tiver um padrão de URL de filme nem uma extensão de VOD, é descartado.
+            // Isso ajuda a remover links de canais ao vivo que não foram pegos pelo '/live/'.
+            if (!isMovieUrl && !isVodExtension) {
+                return false;
+            }
+
+            // Se passou por todas as exclusões e foi identificado como filme, será mantido.
+            return true;
+        }
+
+
+        function parseM3U(content) {
+            if (!content || typeof content !== 'string') {
+                throw new Error('Conteúdo M3U inválido');
+            }
+            
+            const lines = content.split('\n');
+            const items = [];
+            let currentItem = null;
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                
+                if (line.startsWith('#EXTINF:')) {
+                    const nameMatch = line.match(/,(.*)$/);
+                    const groupMatch = line.match(/group-title="([^"]*)"/);
+                    
+                    currentItem = {
+                        name: nameMatch ? nameMatch[1] : 'Item Sem Nome',
+                        group: groupMatch ? groupMatch[1] : 'Sem Categoria',
+                        url: '',
+                        extinf: line 
+                    };
+                } 
+                else if (line && !line.startsWith('#') && currentItem) {
+                    currentItem.url = line;
+                    items.push({...currentItem});
+                    currentItem = null;
+                }
+            }
+            
+            return items;
+        }
+
+        function generateFilteredM3U(movies) {
+            let m3uContent = '#EXTM3U\n';
+            
+            movies.forEach(movie => {
+                m3uContent += `${movie.extinf}\n`;
+                m3uContent += `${movie.url}\n`;
+            });
+            
+            return m3uContent;
+        }
+
+        function showDownloadSection(count) {
+            const downloadSection = document.getElementById('downloadSection');
+            const movieCountEl = document.getElementById('movieCount');
+            
+            movieCountEl.textContent = count;
+            downloadSection.classList.remove('hidden');
+        }
+
+        function hideDownloadSection() {
+            const downloadSection = document.getElementById('downloadSection');
+            downloadSection.classList.add('hidden');
+        }
+
+        async function fetchWithCORS(url) {
+            try {
+                const response = await fetch(url);
+                if (response.ok) return await response.text();
+            } catch (e) {
+                // Falha silenciosa para tentar proxy
+            }
+            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+            try {
+                 const response = await fetch(proxyUrl);
+                 if (response.ok) return await response.text();
+            } catch (e) {
+                 // Ignora erro para lançar erro genérico abaixo
+            }
+            throw new Error('Não foi possível acessar a URL devido a restrições de CORS');
+        }
+
+        function buildXcodesUrl(server, username, password) {
+            server = server.replace(/\/+$/, '');
+            // Esta URL geralmente retorna uma lista completa com canais, filmes e séries
+            return `${server}/get.php?username=${username}&password=${password}&type=m3u_plus&output=ts`;
+        }
+
+        async function filterContent() {
+            const serverUrl = document.getElementById('serverUrl').value.trim();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const contentInput = document.getElementById('m3uContent').value.trim();
+            const filterBtn = document.getElementById('filterBtn');
+            
+            hideCorsWarning();
+            hideDownloadSection();
+            
+            let content = '';
+            
+            if (activeTab === 'xcodes') {
+                if (!serverUrl || !username || !password) {
+                    showStatus('Por favor, preencha todos os campos de credenciais Xcodes.', true);
+                    return;
+                }
+
+                try {
+                    const m3uUrl = buildXcodesUrl(serverUrl, username, password);
+                    showStatus('Carregando lista M3U do servidor...', false, true);
+                    filterBtn.disabled = true;
+                    filterBtn.innerHTML = '<span class="loading"></span> Processando...';
+
+                    content = await fetchWithCORS(m3uUrl);
+                    
+                    if (!content || !content.includes('#EXTM3U')) {
+                        throw new Error('A lista M3U retornada não é válida ou está vazia.');
+                    }
+                } catch (error) {
+                    if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+                        showCorsWarning();
+                    } else {
+                        showStatus(`Erro ao buscar a lista: ${error.message}`, true);
+                    }
+                    filterBtn.disabled = false;
+                    filterBtn.innerHTML = 'Filtrar Filmes (VOD)';
+                    return;
+                }
+            } else {
+                if (!contentInput) {
+                    showStatus('Por favor, cole o conteúdo M3U.', true);
+                    return;
+                }
+                content = contentInput;
+                if (!content || !content.includes('#EXTM3U')) {
+                    showStatus('O conteúdo M3U não é válido.', true);
+                    return;
+                }
+                filterBtn.disabled = true;
+                filterBtn.innerHTML = '<span class="loading"></span> Processando...';
+            }
+            
+            try {
+                showStatus('Processando e filtrando a lista de filmes...', false, true);
+                
+                const allItems = parseM3U(content);
+                
+                if (!allItems || allItems.length === 0) {
+                    throw new Error('Nenhum item encontrado na lista M3U.');
+                }
+                
+                filteredMovies = allItems.filter(item => isVodMovie(item));
+                
+                if (filteredMovies.length > 0) {
+                    showStatus(`Filtro concluído! **${filteredMovies.length} filmes** encontrados.`, false);
+                    showDownloadSection(filteredMovies.length);
+                } else {
+                    showStatus('**Nenhum filme encontrado** após a filtragem. Verifique o conteúdo da sua lista.', true);
+                }
+            } catch (error) {
+                showStatus(`Erro de processamento: ${error.message}`, true);
+            } finally {
+                filterBtn.disabled = false;
+                filterBtn.innerHTML = 'Filtrar Filmes (VOD)';
+            }
+        }
+
+        function downloadFilteredM3U() {
+            if (filteredMovies.length === 0) {
+                showStatus('Nenhuma lista de filmes filtrada para baixar.', true);
+                return;
+            }
+            
+            try {
+                const m3uContent = generateFilteredM3U(filteredMovies); 
+                const blob = new Blob([m3uContent], { type: 'application/x-mpegURL;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                const today = new Date().toISOString().slice(0, 10);
+                a.download = `filmes_filtrados_${today}.m3u`;
+                
+                document.body.appendChild(a);
+                a.click();
+                
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
+                
+                showStatus(`Lista M3U com ${filteredMovies.length} filmes baixada com sucesso!`);
+            } catch (error) {
+                showStatus(`Erro ao baixar a lista: ${error.message}`, true);
+            }
+        }
+
+        function clearAll() {
+            document.getElementById('serverUrl').value = '';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('m3uContent').value = '';
+            hideDownloadSection();
+            hideCorsWarning();
+            filteredMovies = [];
+            showStatus('Formulário limpo!');
+        }
+    </script>
+</body>
+</html>
