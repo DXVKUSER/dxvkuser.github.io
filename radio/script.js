@@ -3,12 +3,12 @@ const HISTORY_LIMIT = 10;
 const UPDATE_INTERVAL = 15000; // 15 segundos
 
 // *** URL QUE CONTÉM O XML COM O NOME DA MÚSICA ***
-// Esta URL tem o IP e a senha que você forneceu.
+// Seu endpoint de metadados: IP/Porta/admin.cgi?pass=6565&mode=viewxml
 const SHOUTCAST_XML_URL = 'http://78.129.150.207:8081/admin.cgi?pass=6565&mode=viewxml'; 
 
-// *** PROXY PÚBLICO MODERNO PARA RESOLVER O CORS ***
-// O navegador fará a requisição para este proxy, que buscará o XML.
-const PROXY_URL = 'https://corsproxy.io/'; 
+// *** PROXY FORNECIDO PELO USUÁRIO (Acessado via HTTPS) ***
+// Usamos HTTPS na porta 80 para tentar compatibilidade com o GitHub Pages
+const PROXY_URL = 'https://51.38.191.151:80/'; 
 
 // O reprodutor de áudio ainda usa o stream HTTPS
 const STREAM_URL = 'https://streamconex.com:8096/stream';
@@ -33,13 +33,15 @@ async function getShoutcastMetadata() {
     streamStatusEl.textContent = 'Status: Buscando metadados via Proxy (XML)...';
     
     // Constrói a URL final: PROXY + URL DO XML
-    const fullProxyUrl = PROXY_URL + '?' + encodeURIComponent(SHOUTCAST_XML_URL);
+    // O PROXY deve buscar a URL do Shoutcast internamente.
+    const fullProxyUrl = PROXY_URL + SHOUTCAST_XML_URL; 
 
     try {
+        // AQUI OCORRE A TENTATIVA DE CONEXÃO COM O NOVO PROXY
         const response = await fetch(fullProxyUrl);
         
         if (!response.ok) {
-            throw new Error(`Falha no proxy, Status: ${response.status}`);
+            throw new Error(`Falha ao conectar no proxy, Status: ${response.status}`);
         }
         
         // Pega o conteúdo como texto para parsing do XML
@@ -63,12 +65,12 @@ async function getShoutcastMetadata() {
             return parseMetadata(fullTitle);
 
         } else {
-            throw new Error("Tag <TIT2> não encontrada no XML.");
+            throw new Error("Tag <TIT2> não encontrada no XML. (XML Inválido)");
         }
 
     } catch (error) {
         console.error('Erro de Metadados Final:', error);
-        streamStatusEl.textContent = 'Status: Erro de conexão 🔴 (Stream ou Proxy indisponível)';
+        streamStatusEl.textContent = 'Status: Erro de conexão 🔴 (Proxy indisponível ou Stream Offline)';
         return { artist: 'Neon Indie Radio', title: 'Conectando ao éter...' };
     }
 }
