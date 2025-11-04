@@ -2,15 +2,9 @@
 const HISTORY_LIMIT = 10; 
 const UPDATE_INTERVAL = 15000; // 15 segundos
 
-// *** URL QUE CONTÉM O XML COM O NOME DA MÚSICA ***
-// Seu endpoint de metadados: IP/Porta/admin.cgi?pass=6565&mode=viewxml
+// *** PARTE DE CONEXÃO REAL COMENTADA PARA O TESTE ***
 const SHOUTCAST_XML_URL = 'http://78.129.150.207:8081/admin.cgi?pass=6565&mode=viewxml'; 
-
-// *** PROXY FORNECIDO PELO USUÁRIO (Acessado via HTTPS) ***
-// Usamos HTTPS na porta 80 para tentar compatibilidade com o GitHub Pages
-const PROXY_URL = 'https://72.10.164.178:19733'; 
-
-// O reprodutor de áudio ainda usa o stream HTTPS
+const PROXY_URL = 'https://51.38.191.151:80/'; 
 const STREAM_URL = 'https://streamconex.com:8096/stream';
 
 // Elementos do DOM
@@ -27,53 +21,26 @@ let playbackHistory = [];
 
 
 /**
- * FUNÇÃO PRINCIPAL: Busca o XML via Proxy e extrai a tag <TIT2>.
+ * FUNÇÃO DE SIMULAÇÃO (APENAS PARA TESTE)
+ * Retorna dados fixos para testar a busca de capa e o histórico.
  */
-async function getShoutcastMetadata() {
-    streamStatusEl.textContent = 'Status: Buscando metadados via Proxy (XML)...';
-    
-    // Constrói a URL final: PROXY + URL DO XML
-    // O PROXY deve buscar a URL do Shoutcast internamente.
-    const fullProxyUrl = PROXY_URL + SHOUTCAST_XML_URL; 
-
-    try {
-        // AQUI OCORRE A TENTATIVA DE CONEXÃO COM O NOVO PROXY
-        const response = await fetch(fullProxyUrl);
-        
-        if (!response.ok) {
-            throw new Error(`Falha ao conectar no proxy, Status: ${response.status}`);
-        }
-        
-        // Pega o conteúdo como texto para parsing do XML
-        const xmlText = await response.text();
-        
-        // Usa o DOMParser para analisar o XML
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-        
-        // Procura a tag <TIT2>
-        const tit2Element = xmlDoc.getElementsByTagName("TIT2")[0];
-        
-        if (tit2Element && tit2Element.textContent) {
-            const fullTitle = tit2Element.textContent.trim();
-            
-            if (fullTitle.length < 5) {
-                throw new Error("Título da música muito curto ou inválido.");
-            }
-            
-            streamStatusEl.textContent = 'Status: Metadados encontrados! 🎶';
-            return parseMetadata(fullTitle);
-
-        } else {
-            throw new Error("Tag <TIT2> não encontrada no XML. (XML Inválido)");
-        }
-
-    } catch (error) {
-        console.error('Erro de Metadados Final:', error);
-        streamStatusEl.textContent = 'Status: Erro de conexão 🔴 (Proxy indisponível ou Stream Offline)';
-        return { artist: 'Neon Indie Radio', title: 'Conectando ao éter...' };
+async function getSimulatedMetadata() {
+    // 1. Música que será adicionada ao histórico
+    if (playbackHistory.length === 0) {
+        streamStatusEl.textContent = 'Status: Simulação - Adicionando ao Histórico...';
+        return { artist: 'Duran Duran', title: 'Ordinary World' }; 
     }
+    
+    // 2. Música atual (Tears for Fears)
+    streamStatusEl.textContent = 'Status: Simulação - Tears for Fears';
+    return { artist: 'Tears for Fears', title: 'Everybody Wants To Rule The World' };
 }
+
+
+/**
+ * FUNÇÃO PRINCIPAL: Substituída por getSimulatedMetadata para este teste.
+ * * async function getShoutcastMetadata() { ... }
+ */
 
 
 /**
@@ -108,6 +75,7 @@ async function getAlbumArt(artist, track) {
 
         if (data.results && data.results.length > 0) {
             const result = data.results[0];
+            // Troca 100x100 por 600x600 para uma imagem maior
             let imageUrl = result.artworkUrl100.replace('100x100bb', '600x600bb');
             return imageUrl;
         }
@@ -135,25 +103,34 @@ function updateHistoryList() {
 }
 
 async function updateRadioInfo() {
-    const metadata = await getShoutcastMetadata();
+    // *** CHAMANDO A FUNÇÃO DE SIMULAÇÃO ***
+    const metadata = await getSimulatedMetadata();
+    
     const newArtist = metadata.artist;
     const newTitle = metadata.title;
     const isMetadataValid = newArtist !== 'Neon Indie Radio' && newTitle !== 'Conectando ao éter...';
+    // Testa se é uma nova faixa (sempre será na primeira execução)
     const isNewTrack = newArtist !== currentTrack.artist || newTitle !== currentTrack.title;
     
     if (isNewTrack && isMetadataValid) {
         if (currentTrack.artist && currentTrack.title) {
+            // Adiciona a faixa anterior (Duran Duran) ao histórico
             playbackHistory.unshift(currentTrack);
             playbackHistory = playbackHistory.slice(0, HISTORY_LIMIT);
             updateHistoryList();
         }
+        
+        // Define a faixa atual (Tears for Fears)
         currentTrack.artist = newArtist;
         currentTrack.title = newTitle;
         currentArtistEl.textContent = newArtist;
         currentTitleEl.textContent = newTitle;
         currentTitleEl.classList.add('neon-glow'); 
+        
+        // Busca a capa para a faixa atual
         const albumArtUrl = await getAlbumArt(newArtist, newTitle);
         albumArtEl.src = albumArtUrl;
+        
     } else {
         currentArtistEl.textContent = newArtist;
         currentTitleEl.textContent = newTitle;
@@ -174,7 +151,7 @@ function init() {
     radioPlayer.onpause = () => streamStatusEl.textContent = 'Status: Pausado ⏸️';
     radioPlayer.onerror = () => streamStatusEl.textContent = 'Status: Erro no Stream 🔴';
     updateRadioInfo(); 
+    // O intervalo garantirá a transição de Duran Duran para Tears for Fears
     setInterval(updateRadioInfo, UPDATE_INTERVAL);
 }
 document.addEventListener('DOMContentLoaded', init);
-
