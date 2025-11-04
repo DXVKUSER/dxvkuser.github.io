@@ -2,9 +2,7 @@
 const HISTORY_LIMIT = 10; 
 const UPDATE_INTERVAL = 15000; // 15 segundos
 
-// *** PARTE DE CONEXÃO REAL COMENTADA PARA O TESTE ***
-const SHOUTCAST_XML_URL = 'http://78.129.150.207:8081/admin.cgi?pass=6565&mode=viewxml'; 
-const PROXY_URL = 'https://51.38.191.151:80/'; 
+// URL DO STREAM (Para o elemento <audio>)
 const STREAM_URL = 'https://streamconex.com:8096/stream';
 
 // Elementos do DOM
@@ -14,34 +12,24 @@ const albumArtEl = document.getElementById('album-art');
 const historyListEl = document.getElementById('playback-history');
 const streamStatusEl = document.getElementById('stream-status');
 const radioPlayer = document.getElementById('radio-player');
+const playPauseButton = document.getElementById('play-pause-button'); // Novo botão
 
 // Variável de estado
 let currentTrack = { title: '', artist: '' };
 let playbackHistory = [];
 
-
 /**
- * FUNÇÃO DE SIMULAÇÃO (APENAS PARA TESTE)
+ * FUNÇÃO DE SIMULAÇÃO (APENAS PARA TESTE DO LAYOUT E LÓGICA DO FRONT-END)
  * Retorna dados fixos para testar a busca de capa e o histórico.
  */
 async function getSimulatedMetadata() {
-    // 1. Música que será adicionada ao histórico
+    // Na primeira chamada (histórico vazio), retorna a primeira música
     if (playbackHistory.length === 0) {
-        streamStatusEl.textContent = 'Status: Simulação - Adicionando ao Histórico...';
         return { artist: 'Duran Duran', title: 'Ordinary World' }; 
     }
-    
-    // 2. Música atual (Tears for Fears)
-    streamStatusEl.textContent = 'Status: Simulação - Tears for Fears';
+    // Na segunda chamada em diante, retorna a música principal
     return { artist: 'Tears for Fears', title: 'Everybody Wants To Rule The World' };
 }
-
-
-/**
- * FUNÇÃO PRINCIPAL: Substituída por getSimulatedMetadata para este teste.
- * * async function getShoutcastMetadata() { ... }
- */
-
 
 /**
  * Função Auxiliar: Faz o parsing de "Artista - Título"
@@ -59,7 +47,6 @@ function parseMetadata(fullTitle) {
     return { artist, title };
 }
 
-
 /**
  * Busca a capa do álbum usando a API pública da Apple/iTunes (sem chave).
  */
@@ -75,7 +62,6 @@ async function getAlbumArt(artist, track) {
 
         if (data.results && data.results.length > 0) {
             const result = data.results[0];
-            // Troca 100x100 por 600x600 para uma imagem maior
             let imageUrl = result.artworkUrl100.replace('100x100bb', '600x600bb');
             return imageUrl;
         }
@@ -85,7 +71,6 @@ async function getAlbumArt(artist, track) {
         return 'placeholder.png';
     }
 }
-
 
 // *** Funções de Interface (Histórico e Atualização) ***
 
@@ -103,31 +88,25 @@ function updateHistoryList() {
 }
 
 async function updateRadioInfo() {
-    // *** CHAMANDO A FUNÇÃO DE SIMULAÇÃO ***
+    // *** CHAMANDO A FUNÇÃO DE SIMULAÇÃO PARA TESTE ***
     const metadata = await getSimulatedMetadata();
     
     const newArtist = metadata.artist;
     const newTitle = metadata.title;
     const isMetadataValid = newArtist !== 'Neon Indie Radio' && newTitle !== 'Conectando ao éter...';
-    // Testa se é uma nova faixa (sempre será na primeira execução)
     const isNewTrack = newArtist !== currentTrack.artist || newTitle !== currentTrack.title;
     
     if (isNewTrack && isMetadataValid) {
         if (currentTrack.artist && currentTrack.title) {
-            // Adiciona a faixa anterior (Duran Duran) ao histórico
             playbackHistory.unshift(currentTrack);
             playbackHistory = playbackHistory.slice(0, HISTORY_LIMIT);
             updateHistoryList();
         }
-        
-        // Define a faixa atual (Tears for Fears)
         currentTrack.artist = newArtist;
         currentTrack.title = newTitle;
         currentArtistEl.textContent = newArtist;
         currentTitleEl.textContent = newTitle;
         currentTitleEl.classList.add('neon-glow'); 
-        
-        // Busca a capa para a faixa atual
         const albumArtUrl = await getAlbumArt(newArtist, newTitle);
         albumArtEl.src = albumArtUrl;
         
@@ -140,18 +119,49 @@ async function updateRadioInfo() {
         }
     }
 }
+
+// Lógica para o botão Play/Pause
+playPauseButton.addEventListener('click', () => {
+    if (radioPlayer.paused) {
+        radioPlayer.play();
+        playPauseButton.classList.add('playing');
+        streamStatusEl.textContent = 'Status: Reproduzindo 🟢';
+    } else {
+        radioPlayer.pause();
+        playPauseButton.classList.remove('playing');
+        streamStatusEl.textContent = 'Status: Pausado ⏸️';
+    }
+});
+
 function init() {
-    // Garante que o source do player esteja correto
+    // Garante que o source do player esteja correto (se já não estiver no HTML)
     if (radioPlayer.querySelector('source').src !== STREAM_URL) {
         radioPlayer.querySelector('source').src = STREAM_URL;
-        radioPlayer.load();
+        radioPlayer.load(); // Recarrega o player com a nova URL
     }
     
-    radioPlayer.onplay = () => streamStatusEl.textContent = 'Status: Reproduzindo 🟢';
-    radioPlayer.onpause = () => streamStatusEl.textContent = 'Status: Pausado ⏸️';
-    radioPlayer.onerror = () => streamStatusEl.textContent = 'Status: Erro no Stream 🔴';
+    // Configura o estado inicial do botão
+    if (radioPlayer.paused) {
+        playPauseButton.classList.remove('playing');
+    } else {
+        playPauseButton.classList.add('playing');
+    }
+
+    // Event listeners para o player de áudio para atualizar o status
+    radioPlayer.onplay = () => {
+        playPauseButton.classList.add('playing');
+        streamStatusEl.textContent = 'Status: Reproduzindo 🟢';
+    };
+    radioPlayer.onpause = () => {
+        playPauseButton.classList.remove('playing');
+        streamStatusEl.textContent = 'Status: Pausado ⏸️';
+    };
+    radioPlayer.onerror = () => {
+        playPauseButton.classList.remove('playing');
+        streamStatusEl.textContent = 'Status: Erro no Stream 🔴';
+    };
+
     updateRadioInfo(); 
-    // O intervalo garantirá a transição de Duran Duran para Tears for Fears
     setInterval(updateRadioInfo, UPDATE_INTERVAL);
 }
 document.addEventListener('DOMContentLoaded', init);
