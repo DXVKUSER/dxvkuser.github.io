@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neon Indie Radio 🎧</title>
+    <title>Neon Indie Radio - SoundCloud Edition</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;7700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
 <body>
@@ -13,38 +13,42 @@
     <div class="container">
         <header class="neon-header">
             <h1 class="neon-title">NEON INDIE RADIO</h1>
-            <p class="neon-subtitle">Sintonize o Futuro Retro</p>
+            <p class="neon-subtitle">Sintonize o Futuro Retro - (Playlist)</p>
         </header>
 
         <main class="radio-player-section">
-            <div class="current-track neon-box">
-                <div class="album-art-container">
-                    <img id="album-art" src="placeholder.png" alt="Capa do Álbum" class="album-art neon-pulse">
-                    <div class="play-pause-overlay">
-                        <button id="play-pause-button" class="neon-button"></button>
-                    </div>
-                </div>
-                <div class="track-info">
-                    <p id="stream-status" class="status-text neon-text">Status: Conectando...</p>
-                    <p class="current-artist neon-text" id="current-artist">Artista Desconhecido</p>
-                    <h2 class="current-title neon-glow" id="current-track-title">Conectando ao éter...</h2>
-                </div>
+            <div class="current-track neon-box" style="flex-direction: column; gap: 10px;">
+                
+                <h2 class="neon-text" style="text-align: center; margin-bottom: 5px;">Música Atual (Via SoundCloud)</h2>
+                
+                <iframe 
+                    width="100%" 
+                    height="300" 
+                    scrolling="no" 
+                    frameborder="no" 
+                    allow="autoplay" 
+                    src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/400971578&color=%23ff33cc&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true"
+                    style="border-radius: 10px;">
+                </iframe>
+                
+                <p id="stream-status" class="status-text neon-text" style="margin-top: 15px;">
+                    Status: Player SoundCloud carregado.
+                </p>
+                <p class="neon-subtitle">
+                    O nome da música e os controles são gerenciados pelo player do SoundCloud.
+                </p>
             </div>
 
             <div class="playback-history neon-box">
                 <h3 class="neon-text history-title">Histórico de Reprodução</h3>
                 <ul id="playback-history">
-                    <li>Nenhum histórico disponível ainda.</li>
+                    <li>Histórico não disponível para players embed.</li>
+                    <li>Use o player do SoundCloud para ver a lista.</li>
                 </ul>
             </div>
         </main>
 
-        <audio id="radio-player" preload="auto">
-            <source src="https://streamconex.com:8096/stream" type="audio/mpeg">
-            Seu navegador não suporta o elemento de áudio.
-        </audio>
-    </div>
-
-    <script src="script.js"></script>
-</body>
+        </div>
+    
+    </body>
 </html>
