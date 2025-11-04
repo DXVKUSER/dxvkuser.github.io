@@ -4,7 +4,7 @@ const LASTFM_API_KEY = '73b5fb24854700c462c68a42d7ccae2b';
 // *** CORREÇÃO CORS ***
 // Usamos um proxy público para contornar a restrição de CORS ao buscar os metadados do Shoutcast.
 const PROXY_URL = 'https://cors-anywhere.herokuapp.com/'; 
-const SHOUTCAST_RAW_URL = 'http://uk3freenew.listen2myradio.com:8081/currentmetadata?sid=1';
+const SHOUTCAST_RAW_URL = 'https://streamconex.com:8096/currentmetadata?sid=1';
 const SHOUTCAST_METADATA_URL = PROXY_URL + SHOUTCAST_RAW_URL;
 
 const HISTORY_LIMIT = 10; // Limite de músicas no histórico
@@ -190,3 +190,4 @@ function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
