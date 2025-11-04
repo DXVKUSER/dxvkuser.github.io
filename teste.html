@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌊 Indie Waves Radio | O Som da Nova Geração</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Montserrat:wght@800&display=swap" rel="stylesheet">
+  <style>
+    /* Estilos modernizados e indie */
+    :root {
+      --bg-color: #0d0a1b;
+      --accent: #ff4081; /* Pink Vibrante */
+      --secondary-accent: #8a2be2; /* Roxo */
+      --text-light: #e0e0f0;
+      --text-muted: #b0b0c0;
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(145deg, #1a152e 0%, #0d0a1b 75%);
+      color: var(--text-light);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding-bottom: 50px;
+    }
+
+    header {
+      text-align: center;
+      margin-top: 50px;
+      animation: fadeIn 1s ease;
+      padding: 0 20px;
+    }
+
+    h1 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 3.5em;
+      background: linear-gradient(90deg, var(--accent), var(--secondary-accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 3px;
+      margin-bottom: 10px;
+      text-shadow: 0 0 15px rgba(255, 64, 129, 0.3);
+    }
+
+    .subtitle {
+      max-width: 600px;
+      color: var(--text-muted);
+      font-weight: 300;
+      margin: 10px auto 40px auto;
+      font-size: 1.1em;
+      line-height: 1.6;
+    }
+
+    .player-container {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 25px;
+      width: 90%;
+      max-width: 400px;
+      padding: 30px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s ease;
+    }
+
+    .player-container:hover {
+        transform: translateY(-5px);
+    }
+
+    .album-cover {
+      width: 100%;
+      max-width: 350px;
+      border-radius: 18px;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      box-shadow: 0 0 30px rgba(255, 64, 129, 0.4);
+      transition: box-shadow 0.5s ease;
+      animation: pulse 4s infinite alternate;
+    }
+
+    @keyframes pulse {
+        from { box-shadow: 0 0 30px rgba(255, 64, 129, 0.4); }
+        to { box-shadow: 0 0 35px rgba(138, 43, 226, 0.5); }
+    }
+
+    .track-info { margin-top: 25px; }
+    .track-info h2 { 
+        font-size: 1.5em; 
+        margin: 5px 0; 
+        color: var(--accent); 
+        font-weight: 600;
+    }
+    .track-info h3 { 
+        font-size: 1.1em; 
+        font-weight: 400; 
+        color: var(--text-muted); 
+    }
+
+    .lyrics {
+      margin-top: 25px;
+      font-size: 0.95em;
+      line-height: 1.5;
+      color: var(--text-muted);
+      text-align: left;
+      background: rgba(255, 255, 255, 0.08);
+      border-left: 3px solid var(--accent);
+      border-radius: 10px;
+      padding: 15px;
+      max-height: 200px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent) transparent;
+    }
+
+    .lyrics::-webkit-scrollbar { width: 6px; }
+    .lyrics::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+    .lyrics::-webkit-scrollbar-track { background: transparent; }
+
+    audio {
+      margin-top: 25px;
+      width: 100%;
+      outline: none;
+      filter: sepia(20%) saturate(150%) hue-rotate(270deg) drop-shadow(0 0 8px rgba(255, 64, 129, 0.5));
+    }
+
+    audio::-webkit-media-controls-panel {
+      background-color: var(--card-bg);
+      border-radius: 15px;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 50px;
+      padding: 20px;
+      color: var(--text-muted);
+      font-size: 0.9em;
+      width: 100%;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 450px) {
+        h1 { font-size: 2.5em; }
+        .subtitle { font-size: 1em; }
+        .player-container { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Indie Waves Radio</h1>
+    <p class="subtitle">Conecte-se às batidas da liberdade sonora.
+       Indie Waves é a sua rádio digital para descobrir artistas independentes
+       e surfar nas ondas da criatividade.</p>
+  </header>
+
+  <div class="player-container">
+    <img id="albumCover" src="https://via.placeholder.com/300x300.png?text=Indie+Waves" alt="Capa do Álbum" class="album-cover">
+    <div class="track-info">
+      <h2 id="trackTitle">Carregando música...</h2>
+      <h3 id="artistName">Aguardando transmissão</h3>
+    </div>
+
+    <audio id="audioPlayer" controls preload="none">
+      <source src="http://uk3freenew.listen2myradio.com:8081/stream" type="audio/mpeg">
+      Seu navegador não suporta o player de áudio.
+    </audio>
+
+    <div id="lyrics" class="lyrics">Buscando resumo...</div>
+  </div>
+
+  <footer>
+    © 2025 Indie Waves Radio — O som da nova geração independente.
+  </footer>
+
+  <script>
+    // URL de metadados de texto puro (fornecida pelo usuário)
+    const SHOUTCAST_API_META = "http://uk3freenew.listen2myradio.com:8081/currentmetadata?sid=1";
+    // Chave da API da Last.fm (mantida)
+    const LASTFM_API_KEY = "73b5fb24854700c462c68a42d7ccae2b"; 
+    const DEFAULT_COVER = "https://via.placeholder.com/300x300.png?text=Indie+Waves";
+    
+    // Função para decodificar entidades HTML e corrigir acentos
+    function htmlDecode(input) {
+      if (!input) return "";
+      try {
+        const doc = new DOMParser().parseFromString(input, "text/html");
+        return doc.documentElement.textContent;
+      } catch(e) {
+        return input.trim(); 
+      }
+    }
+
+    // Busca a capa e o resumo da Last.fm
+    async function fetchTrackInfo(artist, track) {
+      const albumCover = document.getElementById("albumCover");
+      const lyricsDiv = document.getElementById("lyrics");
+      albumCover.src = DEFAULT_COVER; 
+      lyricsDiv.textContent = "Buscando resumo...";
+
+      try {
+        const res = await fetch(
+          `https://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${LASTFM_API_KEY}&artist=${encodeURIComponent(artist)}&track=${encodeURIComponent(track)}&format=json`
+        );
+        const data = await res.json();
+
+        // Tenta encontrar a capa no tamanho 'large'
+        const cover = data.track?.album?.image?.find(img => img.size === 'large')?.["#text"] || DEFAULT_COVER;
+        albumCover.src = cover;
+
+        // Busca e limpa o resumo (wiki)
+        if (data.track?.wiki?.summary) {
+            const rawText = data.track.wiki.summary.replace(/<\/?[^>]+(>|$)/g, "").trim();
+            lyricsDiv.textContent = htmlDecode(rawText) || "Resumo não disponível.";
+        } else {
+            lyricsDiv.textContent = "Resumo/Letra não disponível na Last.fm.";
+        }
+      } catch (err) {
+        console.error("Erro ao buscar dados da Last.fm:", err);
+      }
+    }
+
+    // Atualiza os metadados da rádio (música e artista)
+    async function updateMetadata() {
+      const artistNameElement = document.getElementById("artistName");
+      const trackTitleElement = document.getElementById("trackTitle");
+      
+      try {
+        // Requisição sem proxy, dependendo do servidor web para funcionar
+        const res = await fetch(SHOUTOUT_API_META);
+        
+        // Verifica se a resposta foi bem-sucedida
+        if (!res.ok) {
+            throw new Error(`Status da resposta: ${res.status}`);
+        }
+        
+        const songtitle = (await res.text()).trim(); 
+        
+        if (songtitle && songtitle !== 'No current song') {
+          // Faz o parsing da string "Artista - Título da Música"
+          const parts = songtitle.split(" - ");
+          let artist = (parts[0] || "Artista Desconhecido").trim();
+          let track = (parts[1] || "Faixa Desconhecida").trim();
+
+          // Aplica a correção de caracteres
+          artist = htmlDecode(artist);
+          track = htmlDecode(track);
+
+          const currentTrack = trackTitleElement.getAttribute("data-current-track");
+          
+          if (currentTrack !== songtitle) {
+            // Se a música mudou, atualiza a interface e busca a capa/resumo
+            artistNameElement.textContent = artist;
+            trackTitleElement.textContent = track;
+            trackTitleElement.setAttribute("data-current-track", songtitle);
+            await fetchTrackInfo(artist, track);
+          }
+          
+        } else {
+            // Se não houver música, define como padrão
+            trackTitleElement.textContent = "Nenhuma música tocando";
+            artistNameElement.textContent = "Indie Waves Radio";
+            document.getElementById("albumCover").src = DEFAULT_COVER;
+            document.getElementById("lyrics").textContent = "Aguardando próxima transmissão...";
+          }
+      } catch (err) {
+        console.error("Erro ao buscar metadados da rádio:", err);
+        trackTitleElement.textContent = "Erro de conexão";
+        artistNameElement.textContent = "Verifique a hospedagem.";
+        document.getElementById("albumCover").src = DEFAULT_COVER;
+      }
+    }
+
+    // Inicialização e loop de atualização
+    updateMetadata();
+    setInterval(updateMetadata, 20000); // Atualiza a cada 20 segundos
+
+    // Player: Garante que o player comece a tocar após a primeira interação do usuário
+    const player = document.getElementById("audioPlayer");
+    player.volume = 0.7; 
+    
+    // Tenta iniciar a reprodução no primeiro clique
+    document.addEventListener('click', () => {
+        player.play().catch(e => {
+            console.log("Player esperando interação do usuário.");
+        });
+    }, { once: true });
+  </script>
+</body>
+</html>
