@@ -8,7 +8,7 @@ const SHOUTCAST_XML_URL = 'http://78.129.150.207:8081/admin.cgi?pass=6565&mode=v
 
 // *** PROXY FORNECIDO PELO USUÁRIO (Acessado via HTTPS) ***
 // Usamos HTTPS na porta 80 para tentar compatibilidade com o GitHub Pages
-const PROXY_URL = 'https://51.38.191.151:80/'; 
+const PROXY_URL = 'https://72.10.164.178:19733'; 
 
 // O reprodutor de áudio ainda usa o stream HTTPS
 const STREAM_URL = 'https://streamconex.com:8096/stream';
@@ -177,3 +177,4 @@ function init() {
     setInterval(updateRadioInfo, UPDATE_INTERVAL);
 }
 document.addEventListener('DOMContentLoaded', init);
+
