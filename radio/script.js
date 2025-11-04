@@ -2,8 +2,19 @@
 const HISTORY_LIMIT = 10; 
 const UPDATE_INTERVAL = 15000; // 15 segundos
 
-// URL direta do stream (para o reprodutor de áudio)
-const STREAM_URL = 'https://streamconex.com:8096/stream'; 
+// *** PROXY PÚBLICO ESTÁVEL (Cors-Anywhere ou similar) ***
+// Ele é NECESSÁRIO porque o navegador bloqueia a porta do Shoutcast.
+const PROXY_URL = 'https://cors-anywhere.herokuapp.com/'; 
+// URL DO SEU STREAM (HTTPS é obrigatório no GitHub Pages)
+const SHOUTCAST_BASE_URL = 'https://streamconex.com:8096'; 
+
+// Tentativas de URL para metadados, com o Proxy na frente de CADA UMA:
+const METADATA_URLS = [
+    // 1. Tenta o endpoint 7.html (Metadado Simples e Comum)
+    PROXY_URL + SHOUTCAST_BASE_URL + '/7.html',                 
+    // 2. Tenta o endpoint de XML/JSON (Se o servidor suportar)
+    PROXY_URL + SHOUTCAST_BASE_URL + '/currentmetadata?sid=1', 
+];
 
 // Elementos do DOM
 const currentTitleEl = document.getElementById('current-track-title');
@@ -17,83 +28,72 @@ const radioPlayer = document.getElementById('radio-player');
 let currentTrack = { title: '', artist: '' };
 let playbackHistory = [];
 
-// Funções de Metadados (Simplificadas)
 
 /**
- * Funções de Metadados Simplificadas: Apenas tenta ler o metadado que o navegador expõe.
- * Se o navegador for capaz de ler o ICY-Metadata, ele estará em radioPlayer.textTracks.
+ * FUNÇÃO OTIMIZADA: Tenta buscar metadados em múltiplos endpoints Shoutcast usando o Proxy.
  */
-function getShoutcastMetadata() {
-    // 1. Tenta pegar metadados do próprio player de áudio (se o navegador os expôs)
-    let fullTitle = 'Conectando ao éter...';
+async function getShoutcastMetadata() {
+    streamStatusEl.textContent = 'Status: Buscando metadados via Proxy Público...';
     
-    // O Chrome/Firefox/Edge às vezes expõem o metadado na propriedade 'default' do textTracks.
-    if (radioPlayer.textTracks && radioPlayer.textTracks.length > 0) {
-        for (let i = 0; i < radioPlayer.textTracks.length; i++) {
-            const track = radioPlayer.textTracks[i];
-            if (track.kind === 'metadata' || track.mode === 'showing') {
-                // Tenta ouvir por eventos de metadados
-                track.oncuechange = function() {
-                    if (track.activeCues && track.activeCues.length > 0) {
-                        // O valor exato aqui depende do navegador e do stream
-                        fullTitle = track.activeCues[0].text || fullTitle;
-                        updateMetadataFromTitle(fullTitle);
-                    }
-                };
+    for (const url of METADATA_URLS) {
+        try {
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+                continue; 
             }
+            
+            let metadata = await response.text();
+            
+            // Tratamento especial para o endpoint 7.html
+            if (url.includes('7.html')) {
+                // O formato v1 é "número,número,Artista - Título"
+                // Procura por <body>...</body> e então faz o parsing
+                const bodyMatch = metadata.match(/<body>(.*?)<\/body>/i);
+                if (bodyMatch) {
+                    // Limpa HTML e separa a string
+                    const rawData = bodyMatch[1].split(',');
+                    if (rawData.length >= 3) {
+                         // Pega o terceiro elemento em diante e junta, removendo a contagem
+                         metadata = rawData.slice(2).join(' - ').trim();
+                    } else {
+                         metadata = '';
+                    }
+                } else {
+                    metadata = '';
+                }
+            }
+            
+            if (!metadata || metadata.length < 5 || metadata.toLowerCase().includes('offline')) { 
+                continue;
+            }
+
+            // Parsing do formato: "Artista - Título"
+            const parts = metadata.split(' - ');
+            let artist = 'Artista Desconhecido';
+            let title = metadata.trim(); // Assume o metadata completo como título se não houver separação
+            
+            if (parts.length >= 2) {
+                artist = parts[0].trim();
+                title = parts.slice(1).join(' - ').trim(); 
+            }
+
+            streamStatusEl.textContent = `Status: Metadados encontrados!`;
+            return { artist, title }; // Sucesso
+
+        } catch (error) {
+            console.error(`Falha ao tentar ${url}:`, error);
         }
     }
 
-    // Se a leitura do textTrack for muito complexa, voltamos ao padrão mais simples
-    const metadata = parseMetadata(fullTitle);
-    streamStatusEl.textContent = 'Status: Reproduzindo 🟢 (Modo Básico)';
-    return metadata;
-}
-
-// Tenta atualizar a interface usando o título encontrado no player (caso o oncuechange seja acionado)
-function updateMetadataFromTitle(fullTitle) {
-    const metadata = parseMetadata(fullTitle);
-    const newArtist = metadata.artist;
-    const newTitle = metadata.title;
-    const isNewTrack = newArtist !== currentTrack.artist || newTitle !== currentTrack.title;
-    
-    if (isNewTrack) {
-        // Lógica de histórico e UI
-        if (currentTrack.artist && currentTrack.title) {
-            playbackHistory.unshift(currentTrack);
-            playbackHistory = playbackHistory.slice(0, HISTORY_LIMIT);
-            updateHistoryList();
-        }
-        currentTrack.artist = newArtist;
-        currentTrack.title = newTitle;
-        currentArtistEl.textContent = newArtist;
-        currentTitleEl.textContent = newTitle;
-        currentTitleEl.classList.add('neon-glow'); 
-        // A busca de capa (iTunes) ainda é feita
-        getAlbumArt(newArtist, newTitle).then(url => albumArtEl.src = url);
-    }
+    // Se todas as URLs falharem
+    streamStatusEl.textContent = 'Status: Erro de conexão 🔴 (Proxy Público Bloqueado ou Stream Offline)';
+    return { artist: 'Neon Indie Radio', title: 'Conectando ao éter...' };
 }
 
 
 /**
- * Função Auxiliar: Faz o parsing de "Artista - Título"
- */
-function parseMetadata(fullTitle) {
-    let artist = 'Artista Desconhecido';
-    let title = fullTitle.trim();
-    
-    const parts = fullTitle.split(' - ');
-    if (parts.length >= 2) {
-        artist = parts[0].trim();
-        title = parts.slice(1).join(' - ').trim(); 
-    }
-    
-    return { artist, title };
-}
-
-
-/**
- * Busca a capa do álbum usando a API pública da Apple/iTunes (funciona no GitHub Pages).
+ * Busca a capa do álbum usando a API pública da Apple/iTunes (sem chave).
  */
 async function getAlbumArt(artist, track) {
     if (!artist || !track || artist === 'Neon Indie Radio') return 'placeholder.png';
@@ -118,6 +118,7 @@ async function getAlbumArt(artist, track) {
     }
 }
 
+
 // *** Funções de Interface (Histórico e Atualização) ***
 
 function updateHistoryList() {
@@ -133,26 +134,40 @@ function updateHistoryList() {
     });
 }
 
-// A função de atualização agora é simplificada
 async function updateRadioInfo() {
-    // Apenas tenta configurar a escuta do metadado do player
-    getShoutcastMetadata(); 
-}
-
-function init() {
-    // Garante que o source do player esteja correto
-    if (radioPlayer.querySelector('source').src !== STREAM_URL) {
-        radioPlayer.querySelector('source').src = STREAM_URL;
-        radioPlayer.load();
-    }
+    const metadata = await getShoutcastMetadata();
+    const newArtist = metadata.artist;
+    const newTitle = metadata.title;
+    const isMetadataValid = newArtist !== 'Neon Indie Radio' && newTitle !== 'Conectando ao éter...';
+    const isNewTrack = newArtist !== currentTrack.artist || newTitle !== currentTrack.title;
     
-    // Status básico do player
+    if (isNewTrack && isMetadataValid) {
+        if (currentTrack.artist && currentTrack.title) {
+            playbackHistory.unshift(currentTrack);
+            playbackHistory = playbackHistory.slice(0, HISTORY_LIMIT);
+            updateHistoryList();
+        }
+        currentTrack.artist = newArtist;
+        currentTrack.title = newTitle;
+        currentArtistEl.textContent = newArtist;
+        currentTitleEl.textContent = newTitle;
+        currentTitleEl.classList.add('neon-glow'); 
+        const albumArtUrl = await getAlbumArt(newArtist, newTitle);
+        albumArtEl.src = albumArtUrl;
+    } else {
+        currentArtistEl.textContent = newArtist;
+        currentTitleEl.textContent = newTitle;
+        currentTitleEl.classList.remove('neon-glow');
+        if (!isMetadataValid) {
+            albumArtEl.src = 'placeholder.png';
+        }
+    }
+}
+function init() {
     radioPlayer.onplay = () => streamStatusEl.textContent = 'Status: Reproduzindo 🟢';
     radioPlayer.onpause = () => streamStatusEl.textContent = 'Status: Pausado ⏸️';
     radioPlayer.onerror = () => streamStatusEl.textContent = 'Status: Erro no Stream 🔴';
-
     updateRadioInfo(); 
-    // Mantenha o intervalo para tentar capturar a mudança de faixa
     setInterval(updateRadioInfo, UPDATE_INTERVAL);
 }
 document.addEventListener('DOMContentLoaded', init);
