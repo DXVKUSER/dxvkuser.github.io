@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Indie Radio - Estação do Futuro</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="container">
+        <header class="neon-glow">
+            <h1>NEON INDIE</h1>
+            <p>Sua trilha sonora futurista.</p>
+        </header>
+
+        <main>
+            <section class="player-container">
+                <div class="album-art-box">
+                    <img id="album-art" src="placeholder.png" alt="Capa do Álbum" class="neon-border">
+                </div>
+
+                <div class="track-info">
+                    <h2 id="current-track-title" class="neon-text">Carregando...</h2>
+                    <p id="current-artist" class="neon-text-sub">Conectando ao éter...</p>
+
+                    <div class="player-controls">
+                        <audio id="radio-player" controls preload="none">
+                            <source src="http://uk3freenew.listen2myradio.com:8081/stream" type="audio/mpeg">
+                            Seu navegador não suporta o elemento de áudio.
+                        </audio>
+                    </div>
+                    <p id="stream-status" class="status-message">Status: Conectando...</p>
+                </div>
+            </section>
+
+            <section class="history-container">
+                <h3 class="neon-glow-title">🎶 Histórico de Reprodução</h3>
+                <ul id="playback-history" class="history-list">
+                    <li>Nenhum histórico disponível ainda.</li>
+                </ul>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 Neon Indie Radio. Powered by Last.fm & Shoutcast.</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

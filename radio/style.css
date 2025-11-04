@@ -1,0 +1,175 @@
+/* Variáveis para o tema Neon */
+:root {
+    --color-bg: #03001C;
+    --color-neon-pink: #FF33CC;
+    --color-neon-blue: #00CCFF;
+    --color-neon-green: #33FFCC;
+    --color-text-light: #CCFFFF;
+    --font-primary: 'Orbitron', sans-serif;
+    --font-secondary: 'Share Tech Mono', monospace;
+}
+
+body {
+    background-color: var(--color-bg);
+    color: var(--color-text-light);
+    font-family: var(--font-secondary);
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Efeitos Neon */
+.neon-glow {
+    color: var(--color-neon-pink);
+    text-shadow: 0 0 5px var(--color-neon-pink), 0 0 15px var(--color-neon-pink), 0 0 30px var(--color-neon-pink);
+}
+
+.neon-glow-title {
+    color: var(--color-neon-blue);
+    text-shadow: 0 0 4px var(--color-neon-blue), 0 0 10px var(--color-neon-blue), 0 0 20px var(--color-neon-blue);
+    border-bottom: 2px solid var(--color-neon-blue);
+    padding-bottom: 5px;
+}
+
+.neon-text {
+    color: var(--color-neon-green);
+    text-shadow: 0 0 3px var(--color-neon-green);
+    font-family: var(--font-primary);
+    margin: 5px 0;
+}
+
+.neon-text-sub {
+    color: var(--color-text-light);
+    text-shadow: 0 0 1px var(--color-text-light);
+}
+
+.neon-border {
+    border: 3px solid var(--color-neon-pink);
+    box-shadow: 0 0 5px var(--color-neon-pink), 0 0 15px var(--color-neon-pink);
+}
+
+/* Header */
+header {
+    text-align: center;
+    padding: 20px 0;
+    margin-bottom: 30px;
+}
+
+header h1 {
+    font-size: 3em;
+    margin-bottom: 0;
+    font-family: var(--font-primary);
+}
+
+header p {
+    font-size: 1.2em;
+    margin-top: 5px;
+}
+
+/* Player */
+.player-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: inset 0 0 10px var(--color-neon-blue);
+    margin-bottom: 40px;
+}
+
+.album-art-box {
+    width: 200px;
+    height: 200px;
+    margin-right: 30px;
+    flex-shrink: 0;
+}
+
+#album-art {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.track-info {
+    flex-grow: 1;
+    min-width: 250px;
+}
+
+.track-info h2 {
+    font-size: 2em;
+    text-transform: uppercase;
+}
+
+.track-info p {
+    font-size: 1.2em;
+}
+
+/* Player HTML5 (estilização nativa é limitada, mas podemos aplicar o tema) */
+#radio-player {
+    width: 100%;
+    max-width: 400px;
+    margin-top: 15px;
+    background: var(--color-bg);
+    border: 1px solid var(--color-neon-green);
+    border-radius: 5px;
+}
+
+/* Histórico */
+.history-container {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 5px var(--color-neon-pink);
+}
+
+.history-list {
+    list-style: none;
+    padding: 0;
+}
+
+.history-list li {
+    padding: 8px 0;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+    transition: background-color 0.3s;
+}
+
+.history-list li:hover {
+    background-color: rgba(0, 204, 255, 0.1);
+}
+
+.history-list li:last-child {
+    border-bottom: none;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 20px 0;
+    font-size: 0.9em;
+    opacity: 0.7;
+    margin-top: 40px;
+}
+
+/* Responsividade */
+@media (max-width: 600px) {
+    .player-container {
+        flex-direction: column;
+        text-align: center;
+    }
+    .album-art-box {
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+    header h1 {
+        font-size: 2.5em;
+    }
+}
