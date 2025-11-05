@@ -1,300 +1,357 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Neon Indie Radio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@300;400&display=swap" rel="stylesheet">
     <style>
         :root {
             --neon-pink: #ff00ff;
             --neon-cyan: #00ffff;
-            --bg-dark: #0a0a1f;
-            --glass: rgba(20, 20, 40, 0.6);
+            --neon-purple: #9d00ff;
+            --bg-dark: #0a0a0a;
+            --card-bg: rgba(20, 20, 30, 0.7);
+            --text-glow: 0 0 10px rgba(0, 255, 255, 0.8);
+            --text-glow-pink: 0 0 10px rgba(255, 0, 255, 0.8);
         }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            font-family: 'Orbitron', sans-serif;
-            background: var(--bg-dark);
-            color: #fff;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            background-image: 
-                radial-gradient(circle at 20% 80%, rgba(120, 0, 255, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(0, 255, 255, 0.3) 0%, transparent 50%);
-        }
-        .grid-bg {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: 
-                linear-gradient(90deg, rgba(255,0,255,0.05) 1px, transparent 1px),
-                linear-gradient(0deg, rgba(0,255,255,0.05) 1px, transparent 1px);
-            background-size: 50px 50px;
-            animation: grid 20s linear infinite;
-            z-index: -1;
-        }
-        @keyframes grid { 0% { transform: translate(0,0); } 100% { transform: translate(50px,50px); } }
 
-        .container {
-            width: 90%;
-            max-width: 420px;
-            backdrop-filter: blur(15px);
-            background: var(--glass);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 
-                0 0 40px rgba(255,0,255,0.4),
-                0 0 80px rgba(0,255,255,0.2);
-            text-align: center;
-            position: relative;
-            overflow: hidden;
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{
+            background:var(--bg-dark);
+            color:#fff;
+            font-family:'Roboto Mono',monospace;
+            min-height:100vh;
+            position:relative;
+            overflow-x:hidden;
         }
-        .container::before {
-            content: '';
-            position: absolute;
-            top: -50%; left: -50%;
-            width: 200%; height: 200%;
-            background: conic-gradient(from 0deg, transparent, var(--neon-pink), var(--neon-cyan), transparent);
-            animation: rotate 12s linear infinite;
-            z-index: -1;
-            opacity: 0.3;
+        .grid-bg{
+            position:fixed;top:0;left:0;width:100%;height:100%;
+            background:
+                linear-gradient(90deg,rgba(0,255,255,.03)1px,transparent 1px),
+                linear-gradient(0deg,rgba(0,255,255,.03)1px,transparent 1px);
+            background-size:50px 50px;
+            animation:gridMove 20s linear infinite;
+            z-index:-1;
         }
-        @keyframes rotate { to { transform: rotate(360deg); } }
-
-        h1 {
-            font-size: 2.2rem;
-            background: linear-gradient(45deg, var(--neon-pink), var(--neon-cyan));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(255,0,255,0.6);
-            margin-bottom: 20px;
+        @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
+        .container{max-width:1200px;margin:0 auto;padding:2rem;position:relative;z-index:2;}
+        header{text-align:center;margin-bottom:3rem;padding:2rem 0;}
+        .logo{
+            font-family:'Orbitron',sans-serif;font-size:3.5rem;font-weight:900;
+            background:linear-gradient(45deg,var(--neon-cyan),var(--neon-pink),var(--neon-purple));
+            -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+            text-shadow:0 0 30px rgba(0,255,255,.5);
+            animation:pulse 2s infinite;letter-spacing:3px;
         }
-        .album-art {
-            width: 280px;
-            height: 280px;
-            margin: 20px auto;
-            border-radius: 50%;
-            overflow: hidden;
-            box-shadow: 
-                0 0 30px var(--neon-cyan),
-                inset 0 0 30px rgba(0,0,0,0.5);
-            animation: pulse 4s ease-in-out infinite alternate;
-            background: #111 url('https://via.placeholder.com/280/111/fff?text=No+Cover') center/cover;
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.8}}
+        .tagline{font-size:1.2rem;color:var(--neon-cyan);text-shadow:var(--text-glow);margin-top:.5rem;letter-spacing:2px;}
+        .player-container{
+            background:var(--card-bg);border-radius:20px;padding:2rem;
+            box-shadow:0 0 20px rgba(0,255,255,.3),0 0 40px rgba(255,0,255,.2),inset 0 0 20px rgba(0,0,0,.5);
+            backdrop-filter:blur(10px);border:1px solid rgba(0,255,255,.2);margin-bottom:2rem;
         }
-        @keyframes pulse {
-            from { box-shadow: 0 0 30px var(--neon-cyan); }
-            to { box-shadow: 0 0 50px var(--neon-pink); }
+        .now-playing{display:flex;align-items:center;gap:2rem;flex-wrap:wrap;margin-bottom:1.5rem;}
+        .album-art{
+            width:180px;height:180px;border-radius:15px;object-fit:cover;
+            box-shadow:0 0 20px var(--neon-cyan),0 0 40px var(--neon-pink);
+            animation:float 6s ease-in-out infinite;border:2px solid var(--neon-cyan);
         }
-        .track-info {
-            margin: 20px 0;
-            padding: 15px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 15px;
-            border: 1px solid var(--neon-cyan);
-            min-height: 80px;
+        @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+        .track-info{flex:1;min-width:280px;}
+        .artist{font-family:'Orbitron',sans-serif;font-size:2rem;color:var(--neon-pink);text-shadow:var(--text-glow-pink);margin-bottom:.5rem;}
+        .song{font-size:1.5rem;color:var(--neon-cyan);text-shadow:var(--text-glow);}
+        .controls{display:flex;justify-content:center;gap:1rem;margin:1.5rem 0;}
+        .play-btn{
+            width:80px;height:80px;border-radius:50%;background:linear-gradient(45deg,var(--neon-cyan),var(--neon-purple));
+            border:none;color:#fff;font-size:2rem;cursor:pointer;box-shadow:0 0 30px rgba(0,255,255,.6);
+            transition:all .3s;display:flex;align-items:center;justify-content:center;
         }
-        .artist {
-            font-size: 1.5rem;
-            color: var(--neon-pink);
-            text-shadow: 0 0 10px;
-            margin-bottom: 8px;
+        .play-btn:hover{transform:scale(1.1);box-shadow:0 0 50px rgba(0,255,255,.8);}
+        .volume-container{display:flex;align-items:center;gap:.5rem;color:var(--neon-cyan);}
+        .volume-slider{
+            -webkit-appearance:none;width:120px;height:6px;border-radius:3px;
+            background:rgba(0,255,255,.3);outline:none;
         }
-        .title {
-            font-size: 1.3rem;
-            color: var(--neon-cyan);
-            text-shadow: 0 0 10px;
+        .volume-slider::-webkit-slider-thumb{
+            -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+            background:var(--neon-cyan);cursor:pointer;box-shadow:0 0 15px var(--neon-cyan);
         }
-        .player-controls {
-            margin: 25px 0;
+        .history{margin-top:2rem;}
+        .history h3{font-family:'Orbitron',sans-serif;color:var(--neon-purple);text-shadow:0 0 10px rgba(157,0,255,.6);margin-bottom:1rem;font-size:1.5rem;}
+        .history-list{max-height:300px;overflow-y:auto;padding-right:10px;}
+        .history-list::-webkit-scrollbar{width:8px;}
+        .history-list::-webkit-scrollbar-track{background:rgba(0,255,255,.1);border-radius:4px;}
+        .history-list::-webkit-scrollbar-thumb{background:var(--neon-cyan);border-radius:4px;box-shadow:0 0 10px var(--neon-cyan);}
+        .history-item{
+            display:flex;align-items:center;gap:1rem;padding:.75rem 0;
+            border-bottom:1px dashed rgba(0,255,255,.2);opacity:0;animation:fadeIn .5s forwards;
         }
-        button {
-            background: transparent;
-            border: 2px solid var(--neon-cyan);
-            color: var(--neon-cyan);
-            width: 70px; height: 70px;
-            border-radius: 50%;
-            font-size: 2rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 0 20px rgba(0,255,255,0.5);
-        }
-        button:hover {
-            background: var(--neon-cyan);
-            color: #000;
-            box-shadow: 0 0 30px var(--neon-cyan);
-            transform: scale(1.1);
-        }
-        .history {
-            margin-top: 30px;
-            max-height: 220px;
-            overflow-y: auto;
-            padding: 10px;
-            background: rgba(0,0,0,0.2);
-            border-radius: 15px;
-            border: 1px dashed var(--neon-pink);
-        }
-        .history h3 {
-            color: var(--neon-pink);
-            margin-bottom: 10px;
-            font-size: 1.1rem;
-        }
-        .hist-item {
-            padding: 8px;
-            border-bottom: 1px dotted rgba(255,255,255,0.2);
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-        .hist-item:last-child { border: none; }
-        .status {
-            margin-top: 15px;
-            font-size: 0.9rem;
-            color: #0f0;
-            text-shadow: 0 0 5px;
+        .history-item:last-child{border-bottom:none;}
+        @keyframes fadeIn{to{opacity:1}}
+        .history-art{width:50px;height:50px;border-radius:8px;object-fit:cover;box-shadow:0 0 10px rgba(0,255,255,.4);}
+        .history-info{flex:1;}
+        .history-artist{color:var(--neon-pink);font-weight:bold;font-size:.95rem;}
+        .history-song{color:#ccc;font-size:.85rem;}
+        .loading{text-align:center;color:var(--neon-cyan);font-style:italic;animation:blink 1.5s infinite;}
+        @keyframes blink{0%,100%{opacity:.5}50%{opacity:1}}
+        footer{text-align:center;margin-top:3rem;color:rgba(255,255,255,.4);font-size:.9rem;}
+        @media(max-width:768px){
+            .logo{font-size:2.5rem;}
+            .now-playing{flex-direction:column;text-align:center;}
+            .album-art{width:150px;height:150px;}
+            .artist{font-size:1.5rem;}
+            .song{font-size:1.2rem;}
         }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="grid-bg"></div>
     <div class="container">
-        <h1>NEON INDIE</h1>
-        <div class="album-art" id="albumArt">
-            <img id="coverImg" src="" alt="Album Cover" style="width:100%;height:100%;object-fit:cover;display:none;">
+        <header>
+            <h1 class="logo">NEON INDIE</h1>
+            <p class="tagline">VIBRAÇÕES ALTERNATIVAS DO FUTURO</p>
+        </header>
+
+        <div class="player-container">
+            <div class="now-playing">
+                <img id="albumArt" class="album-art" src="https://via.placeholder.com/180x180/111/00ffff?text=NEON" alt="Album Art">
+                <div class="track-info">
+                    <div id="artistName" class="artist">Carregando...</div>
+                    <div id="songTitle" class="song">Conectando à rádio...</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="playBtn" class="play-btn">Play</button>
+                <div class="volume-container">
+                    <span>Volume</span>
+                    <input type="range" id="volume" class="volume-slider" min="0" max="100" value="70">
+                </div>
+            </div>
+
+            <audio id="radioStream" preload="none"></audio>
+
+            <div class="history">
+                <h3>TOCADAS RECENTEMENTE</h3>
+                <div id="historyList" class="history-list">
+                    <div class="loading">Carregando histórico...</div>
+                </div>
+            </div>
         </div>
-        <div class="track-info">
-            <div class="artist" id="artist">Carregando rádio...</div>
-            <div class="title" id="title">-</div>
-        </div>
-        <div class="player-controls">
-            <button id="playBtn"></button>
-        </div>
-        <div class="status" id="status">Conectando...</div>
-        <div class="history">
-            <h3>Histórico</h3>
-            <div id="historyList"></div>
-        </div>
+
+        <footer>
+            <p>Neon Indie Radio © 2025 | Streaming via Shoutcast v2 + Last.fm API</p>
+        </footer>
     </div>
 
-    <audio id="radioStream" preload="none"></audio>
-
     <script>
+        // ==== CONFIGURAÇÃO ====
         const API_KEY = '73b5fb24854700c462c68a42d7ccae2b';
-        const METADATA_URL = 'https://uk3freenew.listen2myradio.com:8081/currentmetadata?sid=1';
-        const STREAM_URL = 'https://uk3freenew.listen2myradio.com:8081';
-        const LASTFM_API = 'https://ws.audioscrobbler.com/2.0/';
+        const METADATA_URL = 'http://uk3freenew.listen2myradio.com:8081/currentmetadata?sid=1';
+        const PROXY = 'https://api.allorigins.win/raw?url=';
+        const STREAM_URL = 'http://uk3freenew.listen2myradio.com:8081/stream';
 
+        // ==== ELEMENTOS DOM ====
         const audio = document.getElementById('radioStream');
         const playBtn = document.getElementById('playBtn');
-        const artistEl = document.getElementById('artist');
-        const titleEl = document.getElementById('title');
-        const coverImg = document.getElementById('coverImg');
+        const volumeSlider = document.getElementById('volume');
+        const artistEl = document.getElementById('artistName');
+        const songEl = document.getElementById('songTitle');
         const albumArt = document.getElementById('albumArt');
         const historyList = document.getElementById('historyList');
-        const statusEl = document.getElementById('status');
 
-        let currentTrack = '';
+        // ==== ESTADO ====
+        let isPlaying = false;
+        let currentFull = '';
         let history = [];
+        let pollInterval = null;
 
-        // Parse Shoutcast metadata (plain text: "Artist - Song")
-        async function fetchMetadata() {
-            try {
-                const res = await fetch(METADATA_URL + '&t=' + Date.now(), { cache: 'no-store' });
-                if (!res.ok) throw new Error('Metadata offline');
-                const text = await res.text();
-                const clean = text.trim();
-                if (clean && clean.includes(' - ')) {
-                    return clean;
-                }
-                return null;
-            } catch (e) {
-                console.warn('Metadata error:', e);
-                return null;
-            }
-        }
-
-        // Get cover from Last.fm
-        async function fetchCover(artist, track) {
-            try {
-                const url = `${LASTFM_API}?method=track.getInfo&api_key=${API_KEY}&artist=${encodeURIComponent(artist)}&track=${encodeURIComponent(track)}&format=json&autocorrect=1`;
-                const res = await fetch(url);
-                const data = await res.json();
-                if (data.track && data.track.album && data.track.album.image) {
-                    const img = data.track.album.image.find(i => i.size === 'extralarge') || 
-                                data.track.album.image[data.track.album.image.length - 1];
-                    return img['#text'] || '';
-                }
-            } catch (e) {
-                console.warn('Last.fm error:', e);
-            }
-            return '';
-        }
-
-        // Update UI
-        async function updateNowPlaying(meta) {
-            if (meta === currentTrack) return;
-            if (currentTrack) {
-                history.unshift(currentTrack);
-                if (history.length > 10) history.pop();
-                renderHistory();
-            }
-            currentTrack = meta;
-            const [artist, ...titleParts] = meta.split(' - ');
-            const title = titleParts.join(' - ');
-            artistEl.textContent = artist || 'Desconhecido';
-            titleEl.textContent = title || 'Sem título';
-            statusEl.textContent = 'Tocando agora';
-
-            const coverUrl = await fetchCover(artist, title);
-            if (coverUrl) {
-                coverImg.src = coverUrl;
-                coverImg.style.display = 'block';
-                albumArt.style.backgroundImage = 'none';
-            } else {
-                coverImg.style.display = 'none';
-                albumArt.style.background = '#111 url("https://via.placeholder.com/280/111/fff?text='+encodeURIComponent(artist.charAt(0))+'") center/cover';
-            }
-        }
-
-        function renderHistory() {
-            historyList.innerHTML = history.map(t => 
-                `<div class="hist-item">${t}</div>`
-            ).join('');
-        }
-
-        // Player control
-        playBtn.addEventListener('click', () => {
-            if (audio.paused) {
-                audio.src = STREAM_URL;
-                audio.play().then(() => {
-                    playBtn.textContent = '';
-                    statusEl.textContent = 'Reproduzindo...';
-                }).catch(e => {
-                    statusEl.textContent = 'Erro: ' + e.message;
-                });
-            } else {
-                audio.pause();
-                playBtn.textContent = '';
-                statusEl.textContent = 'Pausado';
-            }
+        // ==== INICIALIZAÇÃO ====
+        document.addEventListener('DOMContentLoaded', () => {
+            setupAudio();
+            setupControls();
+            startPolling();
         });
 
-        // Poll metadata every 8s
-        async function poll() {
-            const meta = await fetchMetadata();
-            if (meta) {
-                await updateNowPlaying(meta);
-            } else {
-                statusEl.textContent = 'Aguardando música...';
-            }
-            setTimeout(poll, 8000);
+        // ---------------- AUDIO ----------------
+        function setupAudio() {
+            audio.src = STREAM_URL;
+            audio.crossOrigin = 'anonymous';
+
+            audio.addEventListener('canplay', () => {
+                if (isPlaying) audio.play().catch(() => {});
+            });
+
+            audio.addEventListener('error', () => {
+                setInfo('Erro', 'Falha no stream. Verifique conexão.');
+            });
         }
 
-        // Start
-        poll();
-        renderHistory();
+        function setInfo(artist, title) {
+            artistEl.textContent = artist;
+            songEl.textContent = title;
+        }
+
+        // ---------------- CONTROLES ----------------
+        function setupControls() {
+            playBtn.addEventListener('click', togglePlay);
+            volumeSlider.addEventListener('input', () => {
+                audio.volume = volumeSlider.value / 100;
+            });
+        }
+
+        function togglePlay() {
+            if (isPlaying) {
+                audio.pause();
+                playBtn.innerHTML = 'Play';
+                isPlaying = false;
+            } else {
+                audio.play().then(() => {
+                    playBtn.innerHTML = 'Pause';
+                    isPlaying = true;
+                }).catch(e => {
+                    console.error(e);
+                    alert('Reprodução bloqueada. Clique em Play após interação.');
+                });
+            }
+        }
+
+        // ---------------- POLLING METADATA ----------------
+        function startPolling() {
+            fetchMetadata();
+            pollInterval = setInterval(fetchMetadata, 8000);
+        }
+
+        async function fetchMetadata() {
+            try {
+                const proxyUrl = PROXY + encodeURIComponent(METADATA_URL);
+                const resp = await fetch(proxyUrl);
+                const xmlText = await resp.text();
+
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(xmlText, 'text/xml');
+
+                const tit2 = doc.querySelector('TIT2');
+                if (!tit2 || !tit2.textContent) return;
+
+                const fullTitle = tit2.textContent.trim();
+                if (fullTitle && fullTitle !== currentFull) {
+                    currentFull = fullTitle;
+                    parseAndShow(fullTitle);
+                    addToHistory(fullTitle);
+                }
+            } catch (e) {
+                console.error('Erro ao parsear XML:', e);
+            }
+        }
+
+        // ---------------- PARSE & UI ----------------
+        function parseAndShow(full) {
+            const parts = full.split(' - ');
+            let artist = 'Artista Desconhecido';
+            let song = full;
+
+            if (parts.length >= 2) {
+                artist = parts[0].trim();
+                song = parts.slice(1).join(' - ').trim();
+            }
+
+            setInfo(artist, song);
+            fetchAlbumArt(artist, song);
+        }
+
+        // ---------------- LAST.FM ART ----------------
+        async function fetchAlbumArt(artist, track) {
+            try {
+                const url = `https://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${API_KEY}&artist=${encodeURIComponent(artist)}&track=${encodeURIComponent(track)}&format=json`;
+                const r = await fetch(url);
+                const d = await r.json();
+
+                let img = 'https://via.placeholder.com/180x180/111/00ffff?text=' + encodeURIComponent(artist.charAt(0));
+
+                if (d.track?.album?.image) {
+                    const large = d.track.album.image.find(i => i.size === 'large' || i.size === 'extralarge');
+                    if (large?.['#text']) img = large['#text'];
+                } else {
+                    // fallback: artist image
+                    const aurl = `https://ws.audioscrobbler.com/2.0/?method=artist.getInfo&api_key=${API_KEY}&artist=${encodeURIComponent(artist)}&format=json`;
+                    const ar = await fetch(aurl);
+                    const ad = await ar.json();
+                    if (ad.artist?.image) {
+                        const big = ad.artist.image.find(i => i.size === 'mega' || i.size === 'large');
+                        if (big?.['#text']) img = big['#text'];
+                    }
+                }
+
+                albumArt.src = img;
+                albumArt.style.opacity = 0;
+                albumArt.onload = () => {
+                    albumArt.style.transition = 'opacity .5s';
+                    albumArt.style.opacity = 1;
+                };
+            } catch (e) {
+                console.error('Last.fm error:', e);
+                albumArt.src = 'https://via.placeholder.com/180x180/111/00ffff?text=?';
+            }
+        }
+
+        // ---------------- HISTÓRICO ----------------
+        function addToHistory(full) {
+            const key = full;
+            if (history.some(h => h.key === key)) return;
+
+            const parts = full.split(' - ');
+            const artist = parts.length >= 2 ? parts[0].trim() : 'Desconhecido';
+            const song = parts.length >= 2 ? parts.slice(1).join(' - ').trim() : full;
+
+            const entry = { artist, song, key, ts: new Date() };
+            history.unshift(entry);
+            if (history.length > 20) history.pop();
+
+            renderHistory();
+        }
+
+        async function renderHistory() {
+            if (!history.length) {
+                historyList.innerHTML = '<div class="loading">Nenhuma música ainda...</div>';
+                return;
+            }
+
+            historyList.innerHTML = history.map((h, i) => `
+                <div class="history-item" style="animation-delay:${i*0.1}s">
+                    <img src="https://via.placeholder.com/50x50/222/00ffff?text=${encodeURIComponent(h.artist.charAt(0))}"
+                         class="history-art" alt="${h.artist}"
+                         onerror="this.src='https://via.placeholder.com/50x50/222/00ffff?text=?'">
+                    <div class="history-info">
+                        <div class="history-artist">${h.artist}</div>
+                        <div class="history-song">${h.song}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Carrega imagens pequenas (até 5)
+            for (let i = 0; i < Math.min(5, history.length); i++) {
+                const h = history[i];
+                try {
+                    const url = `https://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${API_KEY}&artist=${encodeURIComponent(h.artist)}&track=${encodeURIComponent(h.song)}&format=json`;
+                    const r29 = await fetch(url);
+                    const d = await r29.json();
+                    if (d.track?.album?.image) {
+                        const small = d.track.album.image.find(x => x.size === 'small' || x.size === 'medium');
+                        if (small?.['#text']) {
+                            const imgEl = historyList.children[i].querySelector('.history-art');
+                            imgEl.src = small['#text'];
+                        }
+                    }
+                } catch (_) {}
+            }
+        }
+
+        // ---- fallback inicial ----
+        setTimeout(() => {
+            if (!currentFull) setInfo('Neon Indie Radio', 'Pronto para transmitir vibrações alternativas');
+        }, 3000);
     </script>
 </body>
 </html>
