@@ -1,0 +1,197 @@
+/* styles.css (Exemplo) */
+
+:root {
+    --cor-primaria: #ff4500; /* Laranja/Vermelho Ousado (para botões/destaques) */
+    --cor-secundaria: #333; /* Cinza Escuro (para tipografia) */
+    --cor-fundo: #1a1a1a; /* Fundo Escuro (simulando a vibe garage) */
+    --cor-texto: #f4f4f4; /* Texto Claro */
+    --fonte-principal: 'Montserrat', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--fonte-principal);
+    background-color: var(--cor-fundo);
+    color: var(--cor-texto);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* --- CABEÇALHO --- */
+.cabecalho {
+    background: #0d0d0d;
+    padding: 15px 0;
+    border-bottom: 3px solid var(--cor-primaria); /* Linha de destaque */
+}
+
+.cabecalho .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--cor-primaria);
+}
+
+.menu-navegacao ul {
+    list-style: none;
+    display: flex;
+}
+
+.menu-navegacao a {
+    color: var(--cor-texto);
+    text-decoration: none;
+    padding: 10px 15px;
+    transition: color 0.3s ease;
+}
+
+.menu-navegacao a:hover {
+    color: var(--cor-primaria);
+}
+
+/* --- SEÇÃO PRINCIPAL (HERO) --- */
+.hero {
+    background: url('') no-repeat center center/cover; /* Textura para simular o "garage" */
+    height: 60vh;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    position: relative;
+}
+
+.hero::before { /* Camada escura sutil */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.hero .container {
+    position: relative;
+    z-index: 1;
+}
+
+.slogan {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    font-style: italic;
+}
+
+.musica-atual {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    color: var(--cor-primaria);
+}
+
+/* Estilo do player e botão de Play */
+.player-container audio {
+    display: none; /* Esconde o player padrão e usa o botão customizado */
+}
+
+.btn-play {
+    background: var(--cor-primaria);
+    color: var(--cor-fundo);
+    border: none;
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 50px;
+    transition: background-color 0.3s, transform 0.1s;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-play:hover {
+    background-color: #ff6a33;
+    transform: scale(1.02);
+}
+
+/* --- SEÇÃO PROGRAMAÇÃO --- */
+.programacao, .redes-sociais {
+    padding: 80px 0;
+    text-align: center;
+}
+
+.programacao h2, .redes-sociais h2 {
+    font-size: 2.5rem;
+    margin-bottom: 40px;
+}
+
+.grade-horarios {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.card-programa {
+    background: var(--cor-secundaria);
+    padding: 30px;
+    border-radius: 8px;
+    width: 300px;
+    text-align: left;
+    border-left: 5px solid var(--cor-primaria);
+}
+
+.card-programa h3 {
+    color: var(--cor-primaria);
+    margin-bottom: 10px;
+}
+
+/* --- REDES SOCIAIS --- */
+.icones-sociais a {
+    color: var(--cor-texto);
+    font-size: 2.5rem;
+    margin: 0 15px;
+    transition: color 0.3s ease;
+}
+
+.icones-sociais a:hover {
+    color: var(--cor-primaria);
+}
+
+/* --- RODAPÉ --- */
+.rodape {
+    background: #0d0d0d;
+    padding: 20px 0;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #999;
+}
+
+/* --- RESPONSIVIDADE (Ajustes para telas menores) --- */
+@media (max-width: 768px) {
+    .cabecalho .container {
+        flex-direction: column;
+    }
+    .menu-navegacao ul {
+        margin-top: 10px;
+    }
+    .hero {
+        height: 50vh;
+    }
+    .musica-atual {
+        font-size: 1.5rem;
+    }
+}
