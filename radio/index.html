@@ -1,79 +1,577 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rádio Web Indie Garage | A Essência do Rock</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rádio Indie Neon | HUD Player</title>
+    
+    <!-- Fonte Tech/Neon -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --neon-cyan: #00f3ff;
+            --neon-pink: #bc13fe;
+            --bg-dark: #050505;
+            --panel-bg: rgba(10, 15, 20, 0.85);
+            --border-color: rgba(0, 243, 255, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            
+            /* --- Wallpaper Futurista Neon --- */
+            background-image: url('https://images.unsplash.com/photo-1515630278258-407f66498911?q=80&w=2670&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            
+            /* --- AQUI: O Segredo do Fundo Fixo --- */
+            background-attachment: fixed; 
+            background-color: rgba(5, 5, 5, 0.8);
+            background-blend-mode: multiply;
+
+            /* --- Layout de Rolagem --- */
+            display: block; /* Remove o flex center forçado */
+            min-height: 100vh; /* Garante que a página tenha altura total */
+            color: #fff;
+            
+            /* Padding para permitir rolagem e dar respiro */
+            padding: 100px 10px; 
+            overflow-x: hidden;
+        }
+
+        /* Wrapper para centralizar o player horizontalmente na página */
+        .page-wrapper {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+
+        /* Efeito de brilho ambiente (também fixo ou relativo) */
+        body::before {
+            content: '';
+            position: fixed; /* Fixo na tela */
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, transparent 0%, #000 90%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* --- Animação de Piscar Neon --- */
+        @keyframes neonBlink {
+            0%, 100% {
+                color: var(--neon-cyan);
+                border-color: var(--neon-cyan);
+                box-shadow: 0 0 5px var(--neon-cyan), 0 0 10px var(--neon-cyan);
+                text-shadow: 0 0 5px var(--neon-cyan);
+            }
+            50% {
+                color: var(--neon-pink);
+                border-color: var(--neon-pink);
+                box-shadow: 0 0 5px var(--neon-pink), 0 0 15px var(--neon-pink);
+                text-shadow: 0 0 5px var(--neon-pink);
+            }
+        }
+
+        /* --- Player HUD Container --- */
+        .hud-player {
+            position: relative;
+            width: 100%;
+            max-width: 380px;
+            background: var(--panel-bg);
+            clip-path: polygon(
+                20px 0, 100% 0, 
+                100% calc(100% - 20px), calc(100% - 20px) 100%, 
+                0 100%, 0 20px
+            );
+            border: 1px solid var(--border-color);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: border-color 2s, box-shadow 2s;
+            margin-bottom: 50px; /* Espaço extra abaixo */
+        }
+
+        /* Linhas decorativas */
+        .hud-player::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 40px; height: 40px;
+            border-top: 2px solid var(--neon-cyan);
+            border-left: 2px solid var(--neon-cyan);
+            clip-path: polygon(0 0, 100% 0, 0 100%);
+            pointer-events: none;
+            transition: border-color 2s;
+        }
+
+        /* --- Header --- */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 10px;
+        }
+
+        .brand-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 0 5px var(--neon-cyan);
+            letter-spacing: 1px;
+        }
+
+        .status-badge {
+            font-size: 0.6rem;
+            color: rgba(255,255,255,0.5);
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 2px 6px;
+            text-transform: uppercase;
+            font-weight: 700;
+            box-shadow: none;
+            transition: all 0.5s;
+        }
+
+        .status-badge.blinking {
+            animation: neonBlink 2s infinite ease-in-out;
+        }
+
+        /* --- Capa Holográfica --- */
+        .holo-display {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            max-height: 50vh; 
+            background: #000;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .album-art {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.9;
+            transition: opacity 0.3s ease;
+            filter: contrast(1.1) saturate(1.1);
+        }
+
+        .scanlines {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 243, 255, 0.1);
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        /* --- Info Text --- */
+        .info-panel {
+            text-align: left;
+        }
+
+        .label {
+            font-size: 0.6rem;
+            color: var(--neon-pink);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 2px;
+        }
+
+        .track-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .artist-text {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.7);
+            font-weight: 300;
+        }
+
+        /* --- Controls --- */
+        .controls-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 12px;
+        }
+
+        .main-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .btn {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .btn:hover {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+            color: var(--neon-cyan);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        .btn-large {
+            width: 55px;
+            height: 55px;
+            border-radius: 5px;
+            background: rgba(0, 243, 255, 0.1);
+        }
+
+        .btn-large.active {
+            animation: neonBlink 2s infinite ease-in-out;
+        }
+
+        .btn-large svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .btn-small {
+            width: 35px;
+            height: 35px;
+        }
+
+        .volume-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type=range] {
+            flex: 1;
+            -webkit-appearance: none;
+            background: rgba(255,255,255,0.1);
+            height: 4px;
+            border-radius: 0;
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: var(--neon-pink);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--neon-pink);
+        }
+
+        @media (max-width: 360px) {
+            .brand-title { font-size: 1rem; }
+            .track-title { font-size: 0.9rem; }
+            .btn-large { width: 45px; height: 45px; }
+        }
+    </style>
 </head>
 <body>
-    <header class="cabecalho">
-        <div class="container">
-            <h1 class="logo">Rádio Web Indie Garage</h1>
-            <nav class="menu-navegacao">
-                <ul>
-                    <li><a href="#ao-vivo">AO VIVO</a></li>
-                    <li><a href="#programacao">PROGRAMAÇÃO</a></li>
-                    <li><a href="#contato">CONTATO</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
 
-    <main>
-        <section class="hero" id="ao-vivo">
-            <div class="container">
-                <p class="slogan">A Essência Vibrante do Underground</p>
-                <div class="player-container">
-                    <h2 class="musica-atual">Tocando Agora: The Strokes - Last Nite</h2>
-                    <audio id="player-radio" controls autoplay>
-                        <source src="URL_DO_SEU_STREAMING" type="audio/mpeg">
-                        Seu navegador não suporta o elemento de áudio.
-                    </audio>
-                    <button id="botao-play" class="btn-play">
-                        <i class="fas fa-play"></i>
-                        <span>Ouvir Ao Vivo</span>
+    <div class="page-wrapper">
+        <div class="hud-player" id="hudPlayer">
+            <!-- Cabeçalho -->
+            <header class="header">
+                <div class="brand-title">RÁDIO INDIE NEON</div>
+                <div class="status-badge" id="statusBadge">OFFLINE</div>
+            </header>
+
+            <!-- Exibição de Capa (Holograma) -->
+            <section class="holo-display">
+                <div class="loading-overlay" id="loadingOverlay"></div>
+                <div class="scanlines"></div>
+                <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600&auto=format&fit=crop" 
+                     alt="Album Art" 
+                     class="album-art" 
+                     id="albumArt">
+            </section>
+
+            <!-- Informações -->
+            <section class="info-panel">
+                <div class="label">TRACK DATA</div>
+                <div class="track-title" id="trackName">INITIALIZING...</div>
+                <div class="artist-text" id="artistName">SYSTEM STANDBY</div>
+            </section>
+
+            <!-- Controles -->
+            <section class="controls-wrapper">
+                <div class="volume-row">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,255,255,0.5)"><path d="M3,9H7L12,4V20L7,15H3V9Z"/></svg>
+                    <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.8">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,255,255,0.5)"><path d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23Z"/></svg>
+                </div>
+
+                <div class="main-controls">
+                    <button class="btn btn-small" id="btnMute" title="Mute">
+                        <svg viewBox="0 0 24 24"><path d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z" /></svg>
+                    </button>
+
+                    <button class="btn btn-large" id="btnPlayPause" title="Play/Pause">
+                        <svg id="iconPlay" viewBox="0 0 24 24" style="display: block;"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg>
+                        <svg id="iconPause" viewBox="0 0 24 24" style="display: none;"><path d="M14,19H18V5H14M6,19H10V5H6V19Z" /></svg>
+                    </button>
+
+                    <button class="btn btn-small" id="btnStop" title="Stop">
+                        <svg viewBox="0 0 24 24"><path d="M18,18H6V6H18V18Z" /></svg>
                     </button>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <section class="programacao" id="programacao">
-            <div class="container">
-                <h2>📻 Destaques da Programação</h2>
-                <div class="grade-horarios">
-                    <article class="card-programa">
-                        <h3>O Garageiro</h3>
-                        <p>Segundas, 20h00 - Os clássicos da garagem.</p>
-                    </article>
-                    <article class="card-programa">
-                        <h3>Indie Nights</h3>
-                        <p>Quartas, 22h00 - Novidades e bandas emergentes.</p>
-                    </article>
-                </div>
-            </div>
-        </section>
-        
-        <section class="redes-sociais">
-            <div class="container">
-                <h2>Siga a Vibe Indie!</h2>
-                <div class="icones-sociais">
-                    <a href="#" target="_blank"><i class="fab fa-instagram"></i></a>
-                    <a href="#" target="_blank"><i class="fab fa-twitter"></i></a>
-                    <a href="#" target="_blank"><i class="fab fa-spotify"></i></a>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <footer class="rodape" id="contato">
-        <div class="container">
-            <p>&copy; 2025 Rádio Web Indie Garage. Feito para quem respira música autêntica.</p>
+            <!-- Áudio -->
+            <audio id="audioPlayer" preload="none">
+                <source src="https://necessary-decided-miles-electron.trycloudflare.com/stream" type="audio/mpeg">
+            </audio>
         </div>
-    </footer>
-    
-    <script src="script.js"></script>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const audio = document.getElementById('audioPlayer');
+            const btnPlayPause = document.getElementById('btnPlayPause');
+            const btnStop = document.getElementById('btnStop');
+            const btnMute = document.getElementById('btnMute');
+            const volumeSlider = document.getElementById('volumeSlider');
+            const iconPlay = document.getElementById('iconPlay');
+            const iconPause = document.getElementById('iconPause');
+            const albumArt = document.getElementById('albumArt');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const trackNameEl = document.getElementById('trackName');
+            const artistNameEl = document.getElementById('artistName');
+            const statusBadge = document.getElementById('statusBadge');
+            const hudPlayer = document.getElementById('hudPlayer');
+
+            const LAST_FM_API_KEY = "73b5fb24854700c462c68a42d7ccae2b";
+
+            let isPlaying = false;
+            let metadataInterval;
+            let currentTrack = "";
+
+            const baseUrl = "https://necessary-decided-miles-electron.trycloudflare.com";
+            const jsonUrl = `${baseUrl}/status-json.xsl`;
+
+            btnPlayPause.addEventListener('click', togglePlay);
+            
+            btnStop.addEventListener('click', () => {
+                audio.pause();
+                audio.currentTime = 0;
+                isPlaying = false;
+                updateUI();
+                updateStatus("OFFLINE", "rgba(255,255,255,0.5)");
+                stopMetadata();
+            });
+
+            btnMute.addEventListener('click', () => {
+                audio.volume = audio.volume > 0 ? 0 : (audio.dataset.prevVol || 0.8);
+                volumeSlider.value = audio.volume;
+            });
+
+            volumeSlider.addEventListener('input', (e) => {
+                audio.volume = e.target.value;
+                audio.dataset.prevVol = audio.volume;
+            });
+
+            function togglePlay() {
+                if (isPlaying) {
+                    audio.pause();
+                } else {
+                    audio.play().then(() => {}).catch(err => {
+                        updateStatus("ERROR", "red");
+                        trackNameEl.innerText = "CONN FAILED";
+                        artistNameEl.innerText = "RETRY";
+                    });
+                }
+            }
+
+            audio.addEventListener('play', () => {
+                isPlaying = true;
+                updateUI();
+                updateStatus("AO VIVO", "#00f3ff");
+                startMetadata();
+            });
+
+            audio.addEventListener('pause', () => {
+                isPlaying = false;
+                updateUI();
+                updateStatus("PAUSED", "#ffa502");
+                stopMetadata();
+            });
+
+            audio.addEventListener('waiting', () => {
+                loadingOverlay.style.opacity = 1;
+            });
+
+            audio.addEventListener('playing', () => {
+                loadingOverlay.style.opacity = 0;
+            });
+
+            function updateUI() {
+                if (isPlaying) {
+                    iconPlay.style.display = 'none';
+                    iconPause.style.display = 'block';
+                    btnPlayPause.classList.add('active');
+                    hudPlayer.classList.add('active-border');
+                } else {
+                    iconPlay.style.display = 'block';
+                    iconPause.style.display = 'none';
+                    btnPlayPause.classList.remove('active');
+                    hudPlayer.classList.remove('active-border');
+                }
+            }
+
+            function updateStatus(text, color) {
+                statusBadge.innerText = text;
+                
+                if(text === "AO VIVO") {
+                    statusBadge.classList.add('blinking');
+                } else {
+                    statusBadge.classList.remove('blinking');
+                    statusBadge.style.color = color;
+                    statusBadge.style.borderColor = color;
+                    statusBadge.style.boxShadow = 'none';
+                }
+            }
+
+            // --- Metadata & Image Logic ---
+
+            function startMetadata() {
+                fetchMetadata();
+                metadataInterval = setInterval(fetchMetadata, 8000);
+            }
+
+            function stopMetadata() {
+                clearInterval(metadataInterval);
+            }
+
+            async function fetchMetadata() {
+                try {
+                    const response = await fetch(jsonUrl);
+                    if (!response.ok) throw new Error("Network error");
+                    
+                    const data = await response.json();
+                    const sources = data.icestats.source;
+
+                    let title = "";
+                    if (Array.isArray(sources)) {
+                        const active = sources.find(s => s.title && s.title !== "");
+                        title = active ? active.title : "";
+                    } else if (sources && sources.title) {
+                        title = sources.title;
+                    }
+
+                    if (title && title !== currentTrack) {
+                        currentTrack = title;
+                        updateTrackDisplay(title);
+                    }
+
+                } catch (error) {
+                    // Silencioso
+                }
+            }
+
+            async function fetchAlbumArt(artist, track) {
+                try {
+                    const url = `https://ws.audioscrobbler.com/2.0/?method=track.getinfo&api_key=${LAST_FM_API_KEY}&artist=${encodeURIComponent(artist)}&track=${encodeURIComponent(track)}&format=json`;
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    let imageUrl = null;
+
+                    if (data.track && data.track.album && data.track.album.image) {
+                        const largeImage = data.track.album.image.find(img => img.size === 'extralarge');
+                        if (largeImage && largeImage['#text']) imageUrl = largeImage['#text'];
+                    }
+                    if (!imageUrl && data.track && data.track.image) {
+                        const largeImage = data.track.image.find(img => img.size === 'extralarge');
+                        if (largeImage && largeImage['#text']) imageUrl = largeImage['#text'];
+                    }
+                    return imageUrl;
+
+                } catch (error) {
+                    return null;
+                }
+            }
+
+            async function updateTrackDisplay(fullTitle) {
+                loadingOverlay.style.opacity = 0.5;
+                
+                let artist = "UNKNOWN";
+                let track = fullTitle;
+
+                if (fullTitle.includes(" - ")) {
+                    const parts = fullTitle.split(" - ");
+                    artist = parts[0].trim();
+                    track = parts.slice(1).join(" - ").trim();
+                }
+
+                trackNameEl.innerText = track;
+                artistNameEl.innerText = artist;
+
+                const artUrl = await fetchAlbumArt(artist, track);
+                const fallbackUrl = `https://picsum.photos/seed/${encodeURIComponent(track)}/300/300`;
+                const finalUrl = artUrl || fallbackUrl;
+
+                albumArt.src = finalUrl;
+                albumArt.onerror = function() {
+                    this.onerror = null;
+                    this.src = fallbackUrl;
+                    loadingOverlay.style.opacity = 0;
+                };
+                albumArt.onload = function() {
+                    loadingOverlay.style.opacity = 0;
+                };
+            }
+        });
+    </script>
 </body>
 </html>
