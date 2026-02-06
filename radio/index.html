@@ -29,30 +29,29 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            user-select: none;
+            user-select: none; /* Previne seleção de texto ao arrastar */
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* --- BODY COM SUPORTE A WALLPAPER --- */
+        /* --- BODY COM SUPORTE A WALLPAPER FIXO --- */
         body {
             font-family: 'Rajdhani', sans-serif;
             background-color: #050505;
             background-size: cover;     
             background-position: center;
             background-repeat: no-repeat;
-            background-attachment: fixed;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            background-attachment: fixed; /* Fundo fixo conforme solicitado */
+            display: block; /* Alterado de flex para block para permitir posicionamento absoluto livre */
             min-height: 100vh;
             color: #fff;
             padding: 20px;
             overflow: hidden; 
             animation: colorCycle 8s infinite linear;
             transition: background-image 0.5s ease-in-out;
+            touch-action: none; /* Importante para não rolar a página ao arrastar no mobile */
         }
 
-        /* Overlay escuro ajustado para 0.6 para o efeito de vidro funcionar melhor */
+        /* Overlay escuro */
         body::before {
             content: '';
             position: fixed;
@@ -62,16 +61,20 @@
             pointer-events: none;
         }
 
-        /* --- Player HUD Container (ESTILO GLASSMORPHISM) --- */
+        /* --- Player HUD Container (ESTILO GLASSMORPHISM + DRAGGABLE) --- */
         .hud-player {
-            position: relative;
+            position: absolute; /* Permite movimentação livre */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* Começa centralizado */
+            
             width: 100%;
             max-width: 350px;
             
             /* Fundo semi-transparente escuro */
             background: rgba(20, 20, 25, 0.55);
             
-            /* Efeito de desfoque no fundo (O segredo do vidro) */
+            /* Efeito de desfoque no fundo */
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             
@@ -81,19 +84,23 @@
                 0 100%, 0 15px
             );
             
-            /* Bordas mais brilhantes para simular vidro cortado */
+            /* Bordas e Sombras */
             border: 1px solid rgba(255, 255, 255, 0.25); 
             border-left: 2px solid var(--primary-color);
             border-right: 2px solid var(--primary-color);
-            
-            /* Sombra suave e difusa */
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(255,255,255,0.05);
             
             padding: 20px;
             display: flex;
             flex-direction: column;
             gap: 15px;
-            transition: all 0.5s ease;
+            transition: all 0.5s ease; /* Suaviza outras mudanças, mas removemos durante o arrasto via JS */
+            cursor: grab; /* Indica que é pegável */
+            z-index: 10;
+        }
+
+        .hud-player:active {
+            cursor: grabbing;
         }
 
         .hud-player::before {
@@ -118,8 +125,9 @@
             font-size: 1rem;
             font-weight: 900;
             color: #fff;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.9); /* Sombra forte para legibilidade */
+            text-shadow: 0 2px 5px rgba(0,0,0,0.9); 
             letter-spacing: 1px;
+            pointer-events: none; /* Impede que cliques no texto interfiram no arrasto */
         }
 
         .status-badge {
@@ -130,7 +138,8 @@
             text-transform: uppercase;
             font-weight: 700;
             transition: 0.3s;
-            background: rgba(0,0,0,0.3); /* Fundo leve na badge */
+            background: rgba(0,0,0,0.3); 
+            pointer-events: none;
         }
 
         .status-badge.live {
@@ -145,12 +154,13 @@
             position: relative;
             width: 100%;
             aspect-ratio: 1 / 1;
-            background: rgba(0,0,0,0.5); /* Fundo levemente escuro */
+            background: rgba(0,0,0,0.5); 
             border: 1px solid rgba(255,255,255,0.2);
             overflow: hidden;
             display: flex;
             flex-direction: column;
             border-radius: 4px;
+            pointer-events: none; /* O clique passa direto para o container pai para arrastar */
         }
 
         .album-art {
@@ -161,6 +171,7 @@
             transition: opacity 0.8s ease-in-out;
             filter: contrast(1.1) saturate(1.2) brightness(0.8); 
             z-index: 1;
+            pointer-events: none;
         }
         
         .album-art.fade-out { opacity: 0; }
@@ -190,6 +201,7 @@
         .info-panel {
             overflow: hidden;
             position: relative;
+            pointer-events: none;
         }
 
         .label {
@@ -217,7 +229,7 @@
             color: #fff;
             display: inline-block;
             padding-left: 5px; 
-            text-shadow: 0 2px 6px rgba(0,0,0,0.9); /* Sombra forte para legibilidade sobre vidro */
+            text-shadow: 0 2px 6px rgba(0,0,0,0.9); 
         }
 
         .scrolling {
@@ -245,6 +257,7 @@
             gap: 15px;
             border-top: 1px solid rgba(255,255,255,0.1);
             padding-top: 15px;
+            pointer-events: auto; /* Reativa cliques nos botões */
         }
 
         .main-controls {
@@ -255,7 +268,7 @@
         }
 
         .btn {
-            background: rgba(255, 255, 255, 0.05); /* Leve transparência nos botões */
+            background: rgba(255, 255, 255, 0.05); 
             border: 1px solid rgba(255,255,255,0.2);
             color: #fff;
             cursor: pointer;
@@ -626,6 +639,68 @@
             }
 
             window.addEventListener('resize', checkMarquee);
+
+            // --- LÓGICA DE ARRASTAR (SLIDABLE UP AND DOWN) ---
+            const player = document.getElementById('hudPlayer');
+            let isDragging = false;
+            let startY, startTop;
+
+            // Função para iniciar o arrasto
+            function dragStart(e) {
+                // Verifica se o clique foi nos controles (slider ou botões)
+                if (e.target.closest('button') || e.target.closest('input')) return;
+
+                isDragging = true;
+                // Obtém posição Y inicial (mouse ou toque)
+                startY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+                
+                // Obtém a posição atual 'top' do elemento
+                const rect = player.getBoundingClientRect();
+                startTop = rect.top;
+                
+                // Remove transição para resposta imediata ao movimento
+                player.style.transition = 'none';
+            }
+
+            // Função durante o movimento
+            function dragMove(e) {
+                if (!isDragging) return;
+                
+                e.preventDefault(); // Impede rolagem da tela no mobile
+
+                const currentY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+                const deltaY = currentY - startY;
+                
+                let newTop = startTop + deltaY;
+
+                // Limites da tela (Clamping)
+                const maxTop = window.innerHeight - player.offsetHeight;
+                if (newTop < 0) newTop = 0;
+                if (newTop > maxTop) newTop = maxTop;
+
+                // Aplica nova posição. Mantém centralizado horizontalmente (translateX -50%)
+                player.style.top = `${newTop}px`;
+                player.style.transform = `translate(-50%, 0)`;
+            }
+
+            // Função ao soltar
+            function dragEnd() {
+                if (!isDragging) return;
+                isDragging = false;
+                // Restaura a transição suave para outras animações CSS
+                player.style.transition = 'all 0.5s ease';
+            }
+
+            // Event Listeners para Mouse
+            player.addEventListener('mousedown', dragStart);
+            window.addEventListener('mousemove', dragMove);
+            window.addEventListener('mouseup', dragEnd);
+
+            // Event Listeners para Touch (Mobile)
+            player.addEventListener('touchstart', dragStart, {passive: false});
+            window.addEventListener('touchmove', dragMove, {passive: false});
+            window.addEventListener('touchend', dragEnd);
+
         });
     </script>
 </body>
