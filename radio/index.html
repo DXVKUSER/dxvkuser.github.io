@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rádio Indie Neon | HUD Player Ultimate</title>
+    <title>Rádio Indie Neon | Glassmorphism Edition</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,40 +33,62 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        /* --- BODY COM SUPORTE A WALLPAPER --- */
         body {
             font-family: 'Rajdhani', sans-serif;
-            background-image: url('https://windowscustomization.com/wp-content/uploads/2019/01/Neon-Forest.gif');
-            background-size: cover;
+            background-color: #050505;
+            background-size: cover;     
             background-position: center;
             background-repeat: no-repeat;
-            background-attachment: fixed; 
-            background-color: rgba(5, 5, 5, 0.85);
-            background-blend-mode: multiply;
+            background-attachment: fixed;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             color: #fff;
             padding: 20px;
-            overflow-x: hidden;
+            overflow: hidden; 
             animation: colorCycle 8s infinite linear;
+            transition: background-image 0.5s ease-in-out;
         }
 
-        /* --- Player HUD Container --- */
+        /* Overlay escuro ajustado para 0.6 para o efeito de vidro funcionar melhor */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* --- Player HUD Container (ESTILO GLASSMORPHISM) --- */
         .hud-player {
             position: relative;
             width: 100%;
             max-width: 350px;
-            background: var(--panel-bg);
+            
+            /* Fundo semi-transparente escuro */
+            background: rgba(20, 20, 25, 0.55);
+            
+            /* Efeito de desfoque no fundo (O segredo do vidro) */
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            
             clip-path: polygon(
                 15px 0, 100% 0, 
                 100% calc(100% - 15px), calc(100% - 15px) 100%, 
                 0 100%, 0 15px
             );
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            
+            /* Bordas mais brilhantes para simular vidro cortado */
+            border: 1px solid rgba(255, 255, 255, 0.25); 
             border-left: 2px solid var(--primary-color);
             border-right: 2px solid var(--primary-color);
-            box-shadow: 0 0 15px var(--primary-color), inset 0 0 50px rgba(0,0,0,0.5);
+            
+            /* Sombra suave e difusa */
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(255,255,255,0.05);
+            
             padding: 20px;
             display: flex;
             flex-direction: column;
@@ -79,6 +101,7 @@
             position: absolute;
             top: 0; left: 0; width: 100%; height: 2px;
             background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+            z-index: 2;
         }
 
         /* --- Header --- */
@@ -95,7 +118,7 @@
             font-size: 1rem;
             font-weight: 900;
             color: #fff;
-            text-shadow: 0 0 8px var(--primary-color);
+            text-shadow: 0 2px 5px rgba(0,0,0,0.9); /* Sombra forte para legibilidade */
             letter-spacing: 1px;
         }
 
@@ -107,6 +130,7 @@
             text-transform: uppercase;
             font-weight: 700;
             transition: 0.3s;
+            background: rgba(0,0,0,0.3); /* Fundo leve na badge */
         }
 
         .status-badge.live {
@@ -121,7 +145,7 @@
             position: relative;
             width: 100%;
             aspect-ratio: 1 / 1;
-            background: #000;
+            background: rgba(0,0,0,0.5); /* Fundo levemente escuro */
             border: 1px solid rgba(255,255,255,0.2);
             overflow: hidden;
             display: flex;
@@ -135,7 +159,7 @@
             object-fit: cover;
             opacity: 1;
             transition: opacity 0.8s ease-in-out;
-            filter: contrast(1.1) saturate(1.2) brightness(0.8); /* Um pouco mais escuro para o equalizador brilhar */
+            filter: contrast(1.1) saturate(1.2) brightness(0.8); 
             z-index: 1;
         }
         
@@ -156,10 +180,9 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 120px; /* Mais alto para efeito dramático */
+            height: 120px;
             z-index: 2;
             pointer-events: none;
-            /* Mistura com a imagem para efeito holográfico */
             mix-blend-mode: screen; 
         }
 
@@ -175,6 +198,7 @@
             text-transform: uppercase;
             letter-spacing: 2px;
             margin-bottom: 5px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
         }
 
         .marquee-container {
@@ -182,7 +206,8 @@
             white-space: nowrap;
             overflow: hidden;
             box-sizing: border-box;
-            mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent); /* Fade nas bordas do texto */
+            mask-image: linear-gradient(90deg, #000 85%, transparent);
+            -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent);
         }
 
         .track-title {
@@ -191,7 +216,8 @@
             font-weight: 700;
             color: #fff;
             display: inline-block;
-            padding-left: 0;
+            padding-left: 5px; 
+            text-shadow: 0 2px 6px rgba(0,0,0,0.9); /* Sombra forte para legibilidade sobre vidro */
         }
 
         .scrolling {
@@ -206,9 +232,10 @@
 
         .artist-text {
             font-size: 0.9rem;
-            color: rgba(255,255,255,0.7);
+            color: rgba(255,255,255,0.8);
             font-weight: 300;
             margin-top: 2px;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.8);
         }
 
         /* --- Controls --- */
@@ -228,7 +255,7 @@
         }
 
         .btn {
-            background: transparent;
+            background: rgba(255, 255, 255, 0.05); /* Leve transparência nos botões */
             border: 1px solid rgba(255,255,255,0.2);
             color: #fff;
             cursor: pointer;
@@ -237,12 +264,14 @@
             align-items: center;
             justify-content: center;
             border-radius: 4px;
+            backdrop-filter: blur(5px);
         }
 
         .btn:hover {
             border-color: var(--primary-color);
             box-shadow: 0 0 10px var(--primary-color);
             color: var(--primary-color);
+            background: rgba(255, 255, 255, 0.1);
             transform: scale(1.05);
         }
 
@@ -255,7 +284,7 @@
         .btn-large {
             width: 60px;
             height: 60px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.1);
             border-color: var(--primary-color);
         }
 
@@ -365,6 +394,7 @@
             // Canvas Variaveis
             const canvas = document.getElementById('vuMeter');
             const ctx = canvas.getContext('2d');
+            
             let audioContext, analyser, source;
             let dataArray;
             let isPlaying = false;
@@ -378,10 +408,8 @@
                         const AudioContext = window.AudioContext || window.webkitAudioContext;
                         audioContext = new AudioContext();
                         analyser = audioContext.createAnalyser();
-                        
-                        // FFT Size maior para mais barras (resolução mais alta)
                         analyser.fftSize = 256; 
-                        analyser.smoothingTimeConstant = 0.7; // Suaviza o movimento (0.0 a 1.0)
+                        analyser.smoothingTimeConstant = 0.7;
                         
                         source = audioContext.createMediaElementSource(audio);
                         source.connect(analyser);
@@ -402,25 +430,21 @@
 
             // --- VISUALIZADOR MODERNO ESPELHADO ---
             function drawModernVisualizer(simulation = false) {
-                // Sincroniza o tamanho do canvas com o elemento real
                 canvas.width = canvas.parentElement.offsetWidth;
-                canvas.height = canvas.parentElement.offsetHeight; // Usa altura total do container
+                canvas.height = canvas.parentElement.offsetHeight;
 
                 function renderFrame() {
                     requestAnimationFrame(renderFrame);
-
                     if(!isPlaying) {
                         ctx.clearRect(0, 0, canvas.width, canvas.height);
                         return;
                     }
 
-                    // Obter dados de frequência
                     if (simulation) {
                          dataArray = new Uint8Array(128).map(() => Math.random() * 255);
                     } else {
                         try {
                             analyser.getByteFrequencyData(dataArray);
-                            // Fallback para silêncio absoluto (CORS issue check)
                             let sum = dataArray.reduce((a, b) => a + b, 0);
                             if (sum === 0 && audio.currentTime > 1) {
                                 for(let k=0; k<dataArray.length; k++) dataArray[k] = Math.random() * 100;
@@ -430,48 +454,25 @@
 
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                    // Configurações de Desenho
-                    const bars = 40; // Quantidade de barras (de um lado do centro)
+                    const bars = 40;
                     const barWidth = (canvas.width / 2) / bars; 
                     const centerX = canvas.width / 2;
-
-                    // Cor Dinâmica
                     const style = getComputedStyle(document.body);
                     const currentColor = style.getPropertyValue('--primary-color').trim();
 
-                    // Desenha do centro para as bordas
                     for (let i = 0; i < bars; i++) {
-                        // Mapeia o índice para focar nas frequencias graves/médias (onde a batida está)
                         const dataIndex = Math.floor(i * (dataArray.length / bars) * 0.8); 
                         const value = dataArray[dataIndex];
-                        
-                        // Altura da barra baseada no volume
-                        // Limitamos a altura para não cobrir a tela toda (max 60% da altura)
                         const barHeight = (value / 255) * (canvas.height * 0.6);
 
-                        // Criar gradiente para a barra (Transparente no topo -> Cor sólida em baixo)
                         const gradient = ctx.createLinearGradient(0, canvas.height, 0, canvas.height - barHeight);
-                        gradient.addColorStop(0, currentColor); // Cor Neon Base
-                        gradient.addColorStop(1, "rgba(255, 255, 255, 0.1)"); // Topo Transparente
+                        gradient.addColorStop(0, currentColor);
+                        gradient.addColorStop(1, "rgba(255, 255, 255, 0.1)");
 
                         ctx.fillStyle = gradient;
 
-                        // Desenhar Barra Direita
-                        // x, y, w, h
-                        ctx.fillRect(
-                            centerX + (i * barWidth), 
-                            canvas.height - barHeight, 
-                            barWidth - 1, // -1 cria o espaço entre barras
-                            barHeight
-                        );
-
-                        // Desenhar Barra Esquerda (Espelhada)
-                        ctx.fillRect(
-                            centerX - ((i + 1) * barWidth), 
-                            canvas.height - barHeight, 
-                            barWidth - 1, 
-                            barHeight
-                        );
+                        ctx.fillRect(centerX + (i * barWidth), canvas.height - barHeight, barWidth - 1, barHeight);
+                        ctx.fillRect(centerX - ((i + 1) * barWidth), canvas.height - barHeight, barWidth - 1, barHeight);
                     }
                 }
                 renderFrame();
@@ -516,7 +517,6 @@
                 stopMetadata();
             });
 
-            // Volume e Mute
             volumeSlider.addEventListener('input', (e) => { audio.volume = e.target.value; audio.dataset.prevVol = audio.volume; });
             btnMute.addEventListener('click', () => {
                 if(audio.volume > 0) { audio.dataset.prevVol = audio.volume; audio.volume = 0; volumeSlider.value = 0; } 
@@ -590,14 +590,25 @@
                 artistNameEl.innerText = artist;
                 checkMarquee();
 
+                // --- MUDANÇA DE WALLPAPER (BASEADO NO TÍTULO) ---
+                const wallpaperUrl = `https://picsum.photos/seed/${encodeURIComponent(track)}/1920/1080`;
+                document.body.style.backgroundImage = `url('${wallpaperUrl}')`;
+
+
+                // --- MUDANÇA DE CAPA DO PLAYER (LAST.FM) ---
                 albumArt.classList.add('fade-out');
                 const artUrl = await fetchAlbumArt(artist, track);
                 const fallbackUrl = `https://picsum.photos/seed/${encodeURIComponent(track)}/500/500`;
                 
                 setTimeout(() => {
-                    albumArt.src = artUrl || fallbackUrl;
+                    const finalUrl = artUrl || fallbackUrl;
+                    albumArt.src = finalUrl;
+
                     albumArt.onload = () => albumArt.classList.remove('fade-out');
-                    albumArt.onerror = () => { albumArt.src = fallbackUrl; albumArt.classList.remove('fade-out'); };
+                    albumArt.onerror = () => { 
+                        albumArt.src = fallbackUrl; 
+                        albumArt.classList.remove('fade-out'); 
+                    };
                 }, 800);
             }
 
@@ -613,6 +624,7 @@
                     return null;
                 } catch (e) { return null; }
             }
+
             window.addEventListener('resize', checkMarquee);
         });
     </script>
