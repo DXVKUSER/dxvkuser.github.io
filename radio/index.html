@@ -3,20 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rádio Indie Neon | HUD Player</title>
+    <title>Rádio Indie Neon | HUD Player Ultimate</title>
     
-    <!-- Fonte Tech/Neon -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --neon-cyan: #00f3ff;
-            --neon-pink: #bc13fe;
+            --primary-color: #00f3ff;
             --bg-dark: #050505;
-            --panel-bg: rgba(10, 15, 20, 0.85);
-            --border-color: rgba(0, 243, 255, 0.3);
+            --panel-bg: rgba(10, 15, 20, 0.9);
+        }
+
+        /* --- Animação Global de Cores (Neon Party) --- */
+        @keyframes colorCycle {
+            0% { --primary-color: #00f3ff; }   /* Ciano */
+            25% { --primary-color: #bc13fe; }  /* Roxo */
+            50% { --primary-color: #ff0055; }  /* Rosa Choque */
+            75% { --primary-color: #00ff9d; }  /* Verde Neon */
+            100% { --primary-color: #00f3ff; } /* Volta pro Ciano */
         }
 
         * {
@@ -29,93 +35,50 @@
 
         body {
             font-family: 'Rajdhani', sans-serif;
-            
-            /* --- Wallpaper Futurista Neon --- */
-            background-image: url('https://i.pinimg.com/originals/f2/8b/62/f28b62e3c73e0991d51e6c0dcb412360.gif');
+            background-image: url('https://windowscustomization.com/wp-content/uploads/2019/01/Neon-Forest.gif');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            
-            /* --- AQUI: O Segredo do Fundo Fixo --- */
             background-attachment: fixed; 
-            background-color: rgba(5, 5, 5, 0.8);
+            background-color: rgba(5, 5, 5, 0.85);
             background-blend-mode: multiply;
-
-            /* --- Layout de Rolagem --- */
-            display: block; /* Remove o flex center forçado */
-            min-height: 100vh; /* Garante que a página tenha altura total */
-            color: #fff;
-            
-            /* Padding para permitir rolagem e dar respiro */
-            padding: 100px 10px; 
-            overflow-x: hidden;
-        }
-
-        /* Wrapper para centralizar o player horizontalmente na página */
-        .page-wrapper {
             display: flex;
             justify-content: center;
-            width: 100%;
-        }
-
-        /* Efeito de brilho ambiente (também fixo ou relativo) */
-        body::before {
-            content: '';
-            position: fixed; /* Fixo na tela */
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, transparent 0%, #000 90%);
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        /* --- Animação de Piscar Neon --- */
-        @keyframes neonBlink {
-            0%, 100% {
-                color: var(--neon-cyan);
-                border-color: var(--neon-cyan);
-                box-shadow: 0 0 5px var(--neon-cyan), 0 0 10px var(--neon-cyan);
-                text-shadow: 0 0 5px var(--neon-cyan);
-            }
-            50% {
-                color: var(--neon-pink);
-                border-color: var(--neon-pink);
-                box-shadow: 0 0 5px var(--neon-pink), 0 0 15px var(--neon-pink);
-                text-shadow: 0 0 5px var(--neon-pink);
-            }
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+            overflow-x: hidden;
+            animation: colorCycle 8s infinite linear;
         }
 
         /* --- Player HUD Container --- */
         .hud-player {
             position: relative;
             width: 100%;
-            max-width: 380px;
+            max-width: 350px;
             background: var(--panel-bg);
             clip-path: polygon(
-                20px 0, 100% 0, 
-                100% calc(100% - 20px), calc(100% - 20px) 100%, 
-                0 100%, 0 20px
+                15px 0, 100% 0, 
+                100% calc(100% - 15px), calc(100% - 15px) 100%, 
+                0 100%, 0 15px
             );
-            border: 1px solid var(--border-color);
-            box-shadow: 0 0 20px rgba(0, 243, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: 2px solid var(--primary-color);
+            border-right: 2px solid var(--primary-color);
+            box-shadow: 0 0 15px var(--primary-color), inset 0 0 50px rgba(0,0,0,0.5);
             padding: 20px;
             display: flex;
             flex-direction: column;
             gap: 15px;
-            transition: border-color 2s, box-shadow 2s;
-            margin-bottom: 50px; /* Espaço extra abaixo */
+            transition: all 0.5s ease;
         }
 
-        /* Linhas decorativas */
-        .hud-player::after {
+        .hud-player::before {
             content: '';
             position: absolute;
-            top: 0; left: 0;
-            width: 40px; height: 40px;
-            border-top: 2px solid var(--neon-cyan);
-            border-left: 2px solid var(--neon-cyan);
-            clip-path: polygon(0 0, 100% 0, 0 100%);
-            pointer-events: none;
-            transition: border-color 2s;
+            top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
         }
 
         /* --- Header --- */
@@ -129,10 +92,10 @@
 
         .brand-title {
             font-family: 'Orbitron', sans-serif;
-            font-size: 1.2rem;
+            font-size: 1rem;
             font-weight: 900;
             color: #fff;
-            text-shadow: 0 0 5px var(--neon-cyan);
+            text-shadow: 0 0 8px var(--primary-color);
             letter-spacing: 1px;
         }
 
@@ -143,92 +106,118 @@
             padding: 2px 6px;
             text-transform: uppercase;
             font-weight: 700;
-            box-shadow: none;
-            transition: all 0.5s;
+            transition: 0.3s;
         }
 
-        .status-badge.blinking {
-            animation: neonBlink 2s infinite ease-in-out;
+        .status-badge.live {
+            color: #000;
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px var(--primary-color);
         }
 
-        /* --- Capa Holográfica --- */
-        .holo-display {
+        /* --- Visual Container --- */
+        .visual-container {
             position: relative;
             width: 100%;
             aspect-ratio: 1 / 1;
-            max-height: 50vh; 
             background: #000;
-            border: 1px solid var(--border-color);
+            border: 1px solid rgba(255,255,255,0.2);
             overflow: hidden;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column;
+            border-radius: 4px;
         }
 
         .album-art {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            opacity: 0.9;
-            transition: opacity 0.3s ease;
-            filter: contrast(1.1) saturate(1.1);
+            opacity: 1;
+            transition: opacity 0.8s ease-in-out;
+            filter: contrast(1.1) saturate(1.2) brightness(0.8); /* Um pouco mais escuro para o equalizador brilhar */
+            z-index: 1;
         }
+        
+        .album-art.fade-out { opacity: 0; }
 
         .scanlines {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.3));
             background-size: 100% 4px;
             pointer-events: none;
-            z-index: 2;
+            z-index: 3;
         }
 
-        .loading-overlay {
+        /* --- MODERN EQUALIZER (CANVAS) --- */
+        #vuMeter {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 243, 255, 0.1);
-            z-index: 1;
-            opacity: 0;
-            transition: opacity 0.3s;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 120px; /* Mais alto para efeito dramático */
+            z-index: 2;
+            pointer-events: none;
+            /* Mistura com a imagem para efeito holográfico */
+            mix-blend-mode: screen; 
         }
 
         /* --- Info Text --- */
         .info-panel {
-            text-align: left;
+            overflow: hidden;
+            position: relative;
         }
 
         .label {
             font-size: 0.6rem;
-            color: var(--neon-pink);
+            color: var(--primary-color);
             text-transform: uppercase;
-            letter-spacing: 1.5px;
-            margin-bottom: 2px;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+
+        .marquee-container {
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            box-sizing: border-box;
+            mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent); /* Fade nas bordas do texto */
         }
 
         .track-title {
             font-family: 'Orbitron', sans-serif;
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: #fff;
-            margin-bottom: 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            display: inline-block;
+            padding-left: 0;
+        }
+
+        .scrolling {
+            animation: marquee 10s linear infinite;
+            padding-left: 100%;
+        }
+
+        @keyframes marquee {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-100%, 0); }
         }
 
         .artist-text {
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             color: rgba(255,255,255,0.7);
             font-weight: 300;
+            margin-top: 2px;
         }
 
         /* --- Controls --- */
         .controls-wrapper {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 15px;
             border-top: 1px solid rgba(255,255,255,0.1);
-            padding-top: 12px;
+            padding-top: 15px;
         }
 
         .main-controls {
@@ -247,17 +236,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Orbitron', sans-serif;
+            border-radius: 4px;
         }
 
         .btn:hover {
-            border-color: var(--neon-cyan);
-            box-shadow: 0 0 10px var(--neon-cyan);
-            color: var(--neon-cyan);
-        }
-
-        .btn:active {
-            transform: scale(0.95);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px var(--primary-color);
+            color: var(--primary-color);
+            transform: scale(1.05);
         }
 
         .btn svg {
@@ -267,26 +253,16 @@
         }
 
         .btn-large {
-            width: 55px;
-            height: 55px;
-            border-radius: 5px;
-            background: rgba(0, 243, 255, 0.1);
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--primary-color);
         }
 
-        .btn-large.active {
-            animation: neonBlink 2s infinite ease-in-out;
-        }
+        .btn-large svg { width: 28px; height: 28px; }
+        .btn-small { width: 40px; height: 40px; }
 
-        .btn-large svg {
-            width: 24px;
-            height: 24px;
-        }
-
-        .btn-small {
-            width: 35px;
-            height: 35px;
-        }
-
+        /* Volume */
         .volume-row {
             display: flex;
             align-items: center;
@@ -298,7 +274,6 @@
             -webkit-appearance: none;
             background: rgba(255,255,255,0.1);
             height: 4px;
-            border-radius: 0;
             outline: none;
         }
 
@@ -306,74 +281,65 @@
             -webkit-appearance: none;
             width: 12px;
             height: 12px;
-            background: var(--neon-pink);
+            background: var(--primary-color);
             cursor: pointer;
-            box-shadow: 0 0 10px var(--neon-pink);
+            box-shadow: 0 0 10px var(--primary-color);
+            transition: background 0.1s;
         }
 
-        @media (max-width: 360px) {
-            .brand-title { font-size: 1rem; }
-            .track-title { font-size: 0.9rem; }
-            .btn-large { width: 45px; height: 45px; }
+        @media (max-width: 380px) {
+            .hud-player { padding: 15px; max-width: 100%; border-left: none; border-right: none; }
+            .track-title { font-size: 1rem; }
         }
     </style>
 </head>
 <body>
 
-    <div class="page-wrapper">
-        <div class="hud-player" id="hudPlayer">
-            <!-- Cabeçalho -->
-            <header class="header">
-                <div class="brand-title">RÁDIO INDIE NEON</div>
-                <div class="status-badge" id="statusBadge">OFFLINE</div>
-            </header>
+    <div class="hud-player" id="hudPlayer">
+        <header class="header">
+            <div class="brand-title">RÁDIO INDIE NEON</div>
+            <div class="status-badge" id="statusBadge">OFFLINE</div>
+        </header>
 
-            <!-- Exibição de Capa (Holograma) -->
-            <section class="holo-display">
-                <div class="loading-overlay" id="loadingOverlay"></div>
-                <div class="scanlines"></div>
-                <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600&auto=format&fit=crop" 
-                     alt="Album Art" 
-                     class="album-art" 
-                     id="albumArt">
-            </section>
+        <section class="visual-container">
+            <div class="scanlines"></div>
+            <canvas id="vuMeter"></canvas>
+            <img src="https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=80&w=600&auto=format&fit=crop" 
+                 alt="Album Art" 
+                 class="album-art" 
+                 id="albumArt">
+        </section>
 
-            <!-- Informações -->
-            <section class="info-panel">
-                <div class="label">TRACK DATA</div>
-                <div class="track-title" id="trackName">INITIALIZING...</div>
-                <div class="artist-text" id="artistName">SYSTEM STANDBY</div>
-            </section>
+        <section class="info-panel">
+            <div class="label">NOW PLAYING</div>
+            <div class="marquee-container" id="marqueeWrapper">
+                <div class="track-title" id="trackName">AGUARDANDO SINAL...</div>
+            </div>
+            <div class="artist-text" id="artistName">SYSTEM READY</div>
+        </section>
 
-            <!-- Controles -->
-            <section class="controls-wrapper">
-                <div class="volume-row">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,255,255,0.5)"><path d="M3,9H7L12,4V20L7,15H3V9Z"/></svg>
-                    <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.8">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,255,255,0.5)"><path d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23Z"/></svg>
-                </div>
+        <section class="controls-wrapper">
+            <div class="volume-row">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,255,255,0.5)"><path d="M3,9H7L12,4V20L7,15H3V9Z"/></svg>
+                <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.8">
+            </div>
+            <div class="main-controls">
+                <button class="btn btn-small" id="btnMute">
+                    <svg viewBox="0 0 24 24"><path d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z" /></svg>
+                </button>
+                <button class="btn btn-large" id="btnPlayPause">
+                    <svg id="iconPlay" viewBox="0 0 24 24" style="display: block;"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg>
+                    <svg id="iconPause" viewBox="0 0 24 24" style="display: none;"><path d="M14,19H18V5H14M6,19H10V5H6V19Z" /></svg>
+                </button>
+                <button class="btn btn-small" id="btnStop">
+                    <svg viewBox="0 0 24 24"><path d="M18,18H6V6H18V18Z" /></svg>
+                </button>
+            </div>
+        </section>
 
-                <div class="main-controls">
-                    <button class="btn btn-small" id="btnMute" title="Mute">
-                        <svg viewBox="0 0 24 24"><path d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z" /></svg>
-                    </button>
-
-                    <button class="btn btn-large" id="btnPlayPause" title="Play/Pause">
-                        <svg id="iconPlay" viewBox="0 0 24 24" style="display: block;"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg>
-                        <svg id="iconPause" viewBox="0 0 24 24" style="display: none;"><path d="M14,19H18V5H14M6,19H10V5H6V19Z" /></svg>
-                    </button>
-
-                    <button class="btn btn-small" id="btnStop" title="Stop">
-                        <svg viewBox="0 0 24 24"><path d="M18,18H6V6H18V18Z" /></svg>
-                    </button>
-                </div>
-            </section>
-
-            <!-- Áudio -->
-            <audio id="audioPlayer" preload="none">
-                <source src="https://citizens-increasingly-lie-kent.trycloudflare.com/stream" type="audio/mpeg">
-            </audio>
-        </div>
+        <audio id="audioPlayer" crossorigin="anonymous" preload="none">
+            <source src="https://citizens-increasingly-lie-kent.trycloudflare.com/stream" type="audio/mpeg">
+        </audio>
     </div>
 
     <script>
@@ -386,21 +352,132 @@
             const iconPlay = document.getElementById('iconPlay');
             const iconPause = document.getElementById('iconPause');
             const albumArt = document.getElementById('albumArt');
-            const loadingOverlay = document.getElementById('loadingOverlay');
             const trackNameEl = document.getElementById('trackName');
             const artistNameEl = document.getElementById('artistName');
             const statusBadge = document.getElementById('statusBadge');
-            const hudPlayer = document.getElementById('hudPlayer');
-
+            const marqueeWrapper = document.getElementById('marqueeWrapper');
+            
+            // --- Configuração API Last.FM ---
             const LAST_FM_API_KEY = "73b5fb24854700c462c68a42d7ccae2b";
+            const baseUrl = "https://citizens-increasingly-lie-kent.trycloudflare.com";
+            const jsonUrl = `${baseUrl}/status-json.xsl`;
 
+            // Canvas Variaveis
+            const canvas = document.getElementById('vuMeter');
+            const ctx = canvas.getContext('2d');
+            let audioContext, analyser, source;
+            let dataArray;
             let isPlaying = false;
             let metadataInterval;
             let currentTrack = "";
 
-            const baseUrl = "https://citizens-increasingly-lie-kent.trycloudflare.com";
-            const jsonUrl = `${baseUrl}/status-json.xsl`;
+            // --- Inicialização do Áudio Context ---
+            function setupAudioContext() {
+                if (!audioContext) {
+                    try {
+                        const AudioContext = window.AudioContext || window.webkitAudioContext;
+                        audioContext = new AudioContext();
+                        analyser = audioContext.createAnalyser();
+                        
+                        // FFT Size maior para mais barras (resolução mais alta)
+                        analyser.fftSize = 256; 
+                        analyser.smoothingTimeConstant = 0.7; // Suaviza o movimento (0.0 a 1.0)
+                        
+                        source = audioContext.createMediaElementSource(audio);
+                        source.connect(analyser);
+                        analyser.connect(audioContext.destination);
+                        
+                        const bufferLength = analyser.frequencyBinCount;
+                        dataArray = new Uint8Array(bufferLength);
+                        
+                        drawModernVisualizer();
+                    } catch (e) {
+                        console.warn("Audio API error, switching to simulation.");
+                        drawModernVisualizer(true);
+                    }
+                } else if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+            }
 
+            // --- VISUALIZADOR MODERNO ESPELHADO ---
+            function drawModernVisualizer(simulation = false) {
+                // Sincroniza o tamanho do canvas com o elemento real
+                canvas.width = canvas.parentElement.offsetWidth;
+                canvas.height = canvas.parentElement.offsetHeight; // Usa altura total do container
+
+                function renderFrame() {
+                    requestAnimationFrame(renderFrame);
+
+                    if(!isPlaying) {
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        return;
+                    }
+
+                    // Obter dados de frequência
+                    if (simulation) {
+                         dataArray = new Uint8Array(128).map(() => Math.random() * 255);
+                    } else {
+                        try {
+                            analyser.getByteFrequencyData(dataArray);
+                            // Fallback para silêncio absoluto (CORS issue check)
+                            let sum = dataArray.reduce((a, b) => a + b, 0);
+                            if (sum === 0 && audio.currentTime > 1) {
+                                for(let k=0; k<dataArray.length; k++) dataArray[k] = Math.random() * 100;
+                            }
+                        } catch(e) {}
+                    }
+
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    // Configurações de Desenho
+                    const bars = 40; // Quantidade de barras (de um lado do centro)
+                    const barWidth = (canvas.width / 2) / bars; 
+                    const centerX = canvas.width / 2;
+
+                    // Cor Dinâmica
+                    const style = getComputedStyle(document.body);
+                    const currentColor = style.getPropertyValue('--primary-color').trim();
+
+                    // Desenha do centro para as bordas
+                    for (let i = 0; i < bars; i++) {
+                        // Mapeia o índice para focar nas frequencias graves/médias (onde a batida está)
+                        const dataIndex = Math.floor(i * (dataArray.length / bars) * 0.8); 
+                        const value = dataArray[dataIndex];
+                        
+                        // Altura da barra baseada no volume
+                        // Limitamos a altura para não cobrir a tela toda (max 60% da altura)
+                        const barHeight = (value / 255) * (canvas.height * 0.6);
+
+                        // Criar gradiente para a barra (Transparente no topo -> Cor sólida em baixo)
+                        const gradient = ctx.createLinearGradient(0, canvas.height, 0, canvas.height - barHeight);
+                        gradient.addColorStop(0, currentColor); // Cor Neon Base
+                        gradient.addColorStop(1, "rgba(255, 255, 255, 0.1)"); // Topo Transparente
+
+                        ctx.fillStyle = gradient;
+
+                        // Desenhar Barra Direita
+                        // x, y, w, h
+                        ctx.fillRect(
+                            centerX + (i * barWidth), 
+                            canvas.height - barHeight, 
+                            barWidth - 1, // -1 cria o espaço entre barras
+                            barHeight
+                        );
+
+                        // Desenhar Barra Esquerda (Espelhada)
+                        ctx.fillRect(
+                            centerX - ((i + 1) * barWidth), 
+                            canvas.height - barHeight, 
+                            barWidth - 1, 
+                            barHeight
+                        );
+                    }
+                }
+                renderFrame();
+            }
+
+            // --- Lógica do Player ---
             btnPlayPause.addEventListener('click', togglePlay);
             
             btnStop.addEventListener('click', () => {
@@ -408,28 +485,19 @@
                 audio.currentTime = 0;
                 isPlaying = false;
                 updateUI();
-                updateStatus("OFFLINE", "rgba(255,255,255,0.5)");
+                updateStatus("OFFLINE");
                 stopMetadata();
-            });
-
-            btnMute.addEventListener('click', () => {
-                audio.volume = audio.volume > 0 ? 0 : (audio.dataset.prevVol || 0.8);
-                volumeSlider.value = audio.volume;
-            });
-
-            volumeSlider.addEventListener('input', (e) => {
-                audio.volume = e.target.value;
-                audio.dataset.prevVol = audio.volume;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
             });
 
             function togglePlay() {
+                setupAudioContext();
                 if (isPlaying) {
                     audio.pause();
                 } else {
-                    audio.play().then(() => {}).catch(err => {
-                        updateStatus("ERROR", "red");
-                        trackNameEl.innerText = "CONN FAILED";
-                        artistNameEl.innerText = "RETRY";
+                    audio.play().catch(err => {
+                        trackNameEl.innerText = "ERRO CONEXÃO";
+                        artistNameEl.innerText = "VERIFIQUE REDE";
                     });
                 }
             }
@@ -437,54 +505,50 @@
             audio.addEventListener('play', () => {
                 isPlaying = true;
                 updateUI();
-                updateStatus("AO VIVO", "#00f3ff");
+                updateStatus("AO VIVO");
                 startMetadata();
             });
 
             audio.addEventListener('pause', () => {
                 isPlaying = false;
                 updateUI();
-                updateStatus("PAUSED", "#ffa502");
+                updateStatus("PAUSED");
                 stopMetadata();
             });
 
-            audio.addEventListener('waiting', () => {
-                loadingOverlay.style.opacity = 1;
-            });
-
-            audio.addEventListener('playing', () => {
-                loadingOverlay.style.opacity = 0;
+            // Volume e Mute
+            volumeSlider.addEventListener('input', (e) => { audio.volume = e.target.value; audio.dataset.prevVol = audio.volume; });
+            btnMute.addEventListener('click', () => {
+                if(audio.volume > 0) { audio.dataset.prevVol = audio.volume; audio.volume = 0; volumeSlider.value = 0; } 
+                else { audio.volume = audio.dataset.prevVol || 0.8; volumeSlider.value = audio.volume; }
             });
 
             function updateUI() {
                 if (isPlaying) {
                     iconPlay.style.display = 'none';
                     iconPause.style.display = 'block';
-                    btnPlayPause.classList.add('active');
-                    hudPlayer.classList.add('active-border');
+                    btnPlayPause.style.boxShadow = "0 0 15px var(--primary-color)";
                 } else {
                     iconPlay.style.display = 'block';
                     iconPause.style.display = 'none';
-                    btnPlayPause.classList.remove('active');
-                    hudPlayer.classList.remove('active-border');
+                    btnPlayPause.style.boxShadow = "none";
                 }
             }
 
-            function updateStatus(text, color) {
+            function updateStatus(text) {
                 statusBadge.innerText = text;
-                
-                if(text === "AO VIVO") {
-                    statusBadge.classList.add('blinking');
-                } else {
-                    statusBadge.classList.remove('blinking');
-                    statusBadge.style.color = color;
-                    statusBadge.style.borderColor = color;
-                    statusBadge.style.boxShadow = 'none';
+                if(text === "AO VIVO") statusBadge.classList.add('live');
+                else statusBadge.classList.remove('live');
+            }
+
+            function checkMarquee() {
+                trackNameEl.classList.remove('scrolling');
+                if (trackNameEl.scrollWidth > marqueeWrapper.clientWidth) {
+                    trackNameEl.classList.add('scrolling');
                 }
             }
 
-            // --- Metadata & Image Logic ---
-
+            // --- Metadados e Capas ---
             function startMetadata() {
                 fetchMetadata();
                 metadataInterval = setInterval(fetchMetadata, 8000);
@@ -497,27 +561,44 @@
             async function fetchMetadata() {
                 try {
                     const response = await fetch(jsonUrl);
-                    if (!response.ok) throw new Error("Network error");
-                    
+                    if (!response.ok) throw new Error("Erro");
                     const data = await response.json();
                     const sources = data.icestats.source;
-
                     let title = "";
                     if (Array.isArray(sources)) {
-                        const active = sources.find(s => s.title && s.title !== "");
-                        title = active ? active.title : "";
+                        const active = sources.find(s => s.title);
+                        title = active ? active.title : "Desconhecido";
                     } else if (sources && sources.title) {
                         title = sources.title;
                     }
-
                     if (title && title !== currentTrack) {
                         currentTrack = title;
                         updateTrackDisplay(title);
                     }
+                } catch (error) {}
+            }
 
-                } catch (error) {
-                    // Silencioso
+            async function updateTrackDisplay(fullTitle) {
+                let artist = "Desconhecido";
+                let track = fullTitle;
+                if (fullTitle.includes(" - ")) {
+                    const parts = fullTitle.split(" - ");
+                    artist = parts[0].trim();
+                    track = parts.slice(1).join(" - ").trim();
                 }
+                trackNameEl.innerText = track;
+                artistNameEl.innerText = artist;
+                checkMarquee();
+
+                albumArt.classList.add('fade-out');
+                const artUrl = await fetchAlbumArt(artist, track);
+                const fallbackUrl = `https://picsum.photos/seed/${encodeURIComponent(track)}/500/500`;
+                
+                setTimeout(() => {
+                    albumArt.src = artUrl || fallbackUrl;
+                    albumArt.onload = () => albumArt.classList.remove('fade-out');
+                    albumArt.onerror = () => { albumArt.src = fallbackUrl; albumArt.classList.remove('fade-out'); };
+                }, 800);
             }
 
             async function fetchAlbumArt(artist, track) {
@@ -525,58 +606,15 @@
                     const url = `https://ws.audioscrobbler.com/2.0/?method=track.getinfo&api_key=${LAST_FM_API_KEY}&artist=${encodeURIComponent(artist)}&track=${encodeURIComponent(track)}&format=json`;
                     const response = await fetch(url);
                     const data = await response.json();
-                    let imageUrl = null;
-
                     if (data.track && data.track.album && data.track.album.image) {
-                        const largeImage = data.track.album.image.find(img => img.size === 'extralarge');
-                        if (largeImage && largeImage['#text']) imageUrl = largeImage['#text'];
+                        const img = data.track.album.image.find(i => i.size === 'extralarge');
+                        if (img && img['#text']) return img['#text'];
                     }
-                    if (!imageUrl && data.track && data.track.image) {
-                        const largeImage = data.track.image.find(img => img.size === 'extralarge');
-                        if (largeImage && largeImage['#text']) imageUrl = largeImage['#text'];
-                    }
-                    return imageUrl;
-
-                } catch (error) {
                     return null;
-                }
+                } catch (e) { return null; }
             }
-
-            async function updateTrackDisplay(fullTitle) {
-                loadingOverlay.style.opacity = 0.5;
-                
-                let artist = "UNKNOWN";
-                let track = fullTitle;
-
-                if (fullTitle.includes(" - ")) {
-                    const parts = fullTitle.split(" - ");
-                    artist = parts[0].trim();
-                    track = parts.slice(1).join(" - ").trim();
-                }
-
-                trackNameEl.innerText = track;
-                artistNameEl.innerText = artist;
-
-                const artUrl = await fetchAlbumArt(artist, track);
-                const fallbackUrl = `https://picsum.photos/seed/${encodeURIComponent(track)}/300/300`;
-                const finalUrl = artUrl || fallbackUrl;
-
-                albumArt.src = finalUrl;
-                albumArt.onerror = function() {
-                    this.onerror = null;
-                    this.src = fallbackUrl;
-                    loadingOverlay.style.opacity = 0;
-                };
-                albumArt.onload = function() {
-                    loadingOverlay.style.opacity = 0;
-                };
-            }
+            window.addEventListener('resize', checkMarquee);
         });
     </script>
 </body>
 </html>
-
-
-
-
-
