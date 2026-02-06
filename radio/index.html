@@ -3,705 +3,1227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rádio Indie Neon | Glassmorphism Edition</title>
+    <meta name="theme-color" content="#050505">
+    <meta name="description" content="Rádio Indie Neon - Player futurista com visualizador de áudio e efeitos neon">
+    <title>Rádio Indie Neon</title>
     
+    <!-- Fonte Orbitron -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
     <style>
-        :root {
-            --primary-color: #00f3ff;
-            --bg-dark: #050505;
-            --panel-bg: rgba(10, 15, 20, 0.9);
-        }
-
-        /* --- Animação Global de Cores (Neon Party) --- */
-        @keyframes colorCycle {
-            0% { --primary-color: #00f3ff; }   /* Ciano */
-            25% { --primary-color: #bc13fe; }  /* Roxo */
-            50% { --primary-color: #ff0055; }  /* Rosa Choque */
-            75% { --primary-color: #00ff9d; }  /* Verde Neon */
-            100% { --primary-color: #00f3ff; } /* Volta pro Ciano */
-        }
-
-        * {
-            box-sizing: border-box;
+        /* ===== RESET & BASE ===== */
+        *, *::before, *::after {
             margin: 0;
             padding: 0;
-            user-select: none; /* Previne seleção de texto ao arrastar */
+            box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* --- BODY COM SUPORTE A WALLPAPER FIXO --- */
-        body {
-            font-family: 'Rajdhani', sans-serif;
-            background-color: #050505;
-            background-size: cover;     
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed; /* Fundo fixo conforme solicitado */
-            display: block; /* Alterado de flex para block para permitir posicionamento absoluto livre */
-            min-height: 100vh;
-            color: #fff;
-            padding: 20px;
-            overflow: hidden; 
-            animation: colorCycle 8s infinite linear;
-            transition: background-image 0.5s ease-in-out;
-            touch-action: none; /* Importante para não rolar a página ao arrastar no mobile */
+        :root {
+            --neon-primary: #00f3ff;
+            --neon-secondary: #bc13fe;
+            --neon-accent: #ff006e;
+            --neon-green: #39ff14;
+            --neon-orange: #ff9500;
+            --dark: #050505;
+            --darker: #020202;
+            --glass: rgba(10, 10, 10, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.08);
         }
 
-        /* Overlay escuro */
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #050505;
+            /* Configurações para o Wallpaper Dinâmico */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed; /* Mantém o fundo fixo enquanto o player interage */
+            transition: background-image 0.8s ease-in-out; /* Transição suave ao trocar de música */
+            
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Overlay escuro para garantir legibilidade sobre qualquer wallpaper */
         body::before {
             content: '';
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            z-index: -1;
+            background: rgba(5, 5, 5, 0.6); /* Escurece o wallpaper */
+            z-index: 0;
             pointer-events: none;
         }
 
-        /* --- Player HUD Container (ESTILO GLASSMORPHISM + DRAGGABLE) --- */
-        .hud-player {
-            position: absolute; /* Permite movimentação livre */
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%); /* Começa centralizado */
-            
-            width: 100%;
-            max-width: 350px;
-            
-            /* Fundo semi-transparente escuro */
-            background: rgba(20, 20, 25, 0.55);
-            
-            /* Efeito de desfoque no fundo */
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            
-            clip-path: polygon(
-                15px 0, 100% 0, 
-                100% calc(100% - 15px), calc(100% - 15px) 100%, 
-                0 100%, 0 15px
-            );
-            
-            /* Bordas e Sombras */
-            border: 1px solid rgba(255, 255, 255, 0.25); 
-            border-left: 2px solid var(--primary-color);
-            border-right: 2px solid var(--primary-color);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(255,255,255,0.05);
-            
-            padding: 20px;
+        /* ===== MAIN CONTAINER ===== */
+        .app-container {
+            position: relative;
+            z-index: 10;
+            height: 100%;
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            transition: all 0.5s ease; /* Suaviza outras mudanças, mas removemos durante o arrasto via JS */
-            cursor: grab; /* Indica que é pegável */
-            z-index: 10;
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
-        .hud-player:active {
-            cursor: grabbing;
-        }
-
-        .hud-player::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 2px;
-            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
-            z-index: 2;
-        }
-
-        /* --- Header --- */
+        /* ===== HEADER ===== */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding-bottom: 10px;
+            padding: 10px 0;
+            margin-bottom: 20px;
         }
 
-        .brand-title {
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--neon-primary), var(--neon-secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: logoRotate 10s linear infinite, logoPulse 2s ease-in-out infinite;
+            box-shadow: 0 0 20px var(--neon-primary);
+        }
+
+        @keyframes logoRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes logoPulse {
+            0%, 100% { box-shadow: 0 0 15px var(--neon-primary); }
+            50% { box-shadow: 0 0 30px var(--neon-secondary), 0 0 50px var(--neon-primary); }
+        }
+
+        .logo-icon svg {
+            width: 22px;
+            height: 22px;
+            color: #000;
+        }
+
+        .logo-text h1 {
             font-family: 'Orbitron', sans-serif;
-            font-size: 1rem;
-            font-weight: 900;
-            color: #fff;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.9); 
+            font-size: 1.3rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #fff, var(--neon-primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             letter-spacing: 1px;
-            pointer-events: none; /* Impede que cliques no texto interfiram no arrasto */
         }
 
-        .status-badge {
+        .logo-text span {
             font-size: 0.6rem;
-            color: rgba(255,255,255,0.5);
-            border: 1px solid rgba(255,255,255,0.3);
-            padding: 2px 6px;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 0.3em;
             text-transform: uppercase;
-            font-weight: 700;
-            transition: 0.3s;
-            background: rgba(0,0,0,0.3); 
-            pointer-events: none;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
         }
 
         .status-badge.live {
-            color: #000;
-            background: var(--primary-color);
-            border-color: var(--primary-color);
-            box-shadow: 0 0 10px var(--primary-color);
+            border-color: var(--neon-primary);
+            box-shadow: 0 0 20px var(--neon-primary)40;
         }
 
-        /* --- Visual Container --- */
-        .visual-container {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            background: rgba(0,0,0,0.5); 
-            border: 1px solid rgba(255,255,255,0.2);
-            overflow: hidden;
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #444;
+            transition: all 0.3s ease;
+        }
+
+        .status-badge.live .status-dot {
+            background: var(--neon-primary);
+            animation: dotPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes dotPulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 0 5px var(--neon-primary);
+            }
+            50% { 
+                transform: scale(1.3);
+                box-shadow: 0 0 15px var(--neon-primary), 0 0 25px var(--neon-primary);
+            }
+        }
+
+        .status-text {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            color: #666;
+            transition: color 0.3s ease;
+        }
+
+        .status-badge.live .status-text {
+            color: var(--neon-primary);
+        }
+
+        /* ===== VISUALIZER SECTION ===== */
+        .visualizer-section {
+            flex: 1;
             display: flex;
             flex-direction: column;
-            border-radius: 4px;
-            pointer-events: none; /* O clique passa direto para o container pai para arrastar */
+            align-items: center;
+            justify-content: center;
+            position: relative;
         }
 
-        .album-art {
+        .album-container {
+            position: relative;
+            width: 260px;
+            height: 260px;
+            margin-bottom: 30px;
+        }
+
+        @media (min-width: 400px) {
+            .album-container {
+                width: 300px;
+                height: 300px;
+            }
+        }
+
+        /* Anel externo rotativo */
+        .album-ring {
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            padding: 3px;
+            background: conic-gradient(from 0deg, var(--neon-primary), var(--neon-secondary), var(--neon-accent), var(--neon-primary));
+            animation: ringRotate 4s linear infinite;
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+        }
+
+        @keyframes ringRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Anel interno pulsante */
+        .album-ring-inner {
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 1px solid transparent;
+            background: linear-gradient(135deg, var(--neon-primary), var(--neon-secondary)) border-box;
+            -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0.5;
+            animation: ringPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes ringPulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.02); opacity: 0.8; }
+        }
+
+        /* Canvas do visualizador */
+        #visualizer-canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Capa do álbum */
+        .album-cover {
+            position: absolute;
+            inset: 35px;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 
+                0 0 40px var(--neon-primary)60,
+                inset 0 0 60px rgba(0,0,0,0.5);
+            animation: albumPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes albumPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .album-cover img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transition: opacity 0.5s ease;
+        }
+
+        .album-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--neon-primary)30, var(--neon-secondary)30);
+        }
+
+        .album-placeholder svg {
+            width: 60px;
+            height: 60px;
+            color: rgba(255,255,255,0.3);
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: absolute;
+            inset: 35px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-overlay.active {
             opacity: 1;
-            transition: opacity 0.8s ease-in-out;
-            filter: contrast(1.1) saturate(1.2) brightness(0.8); 
-            z-index: 1;
-            pointer-events: none;
-        }
-        
-        .album-art.fade-out { opacity: 0; }
-
-        .scanlines {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.3));
-            background-size: 100% 4px;
-            pointer-events: none;
-            z-index: 3;
+            pointer-events: all;
         }
 
-        /* --- MODERN EQUALIZER (CANVAS) --- */
-        #vuMeter {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 120px;
-            z-index: 2;
-            pointer-events: none;
-            mix-blend-mode: screen; 
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid transparent;
+            border-top-color: var(--neon-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            box-shadow: 0 0 15px var(--neon-primary);
         }
 
-        /* --- Info Text --- */
-        .info-panel {
-            overflow: hidden;
-            position: relative;
-            pointer-events: none;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
-        .label {
-            font-size: 0.6rem;
-            color: var(--primary-color);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 5px;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-        }
-
-        .marquee-container {
-            width: 100%;
-            white-space: nowrap;
-            overflow: hidden;
-            box-sizing: border-box;
-            mask-image: linear-gradient(90deg, #000 85%, transparent);
-            -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent);
+        /* ===== TRACK INFO ===== */
+        .track-info {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 0 10px;
         }
 
         .track-title {
             font-family: 'Orbitron', sans-serif;
-            font-size: 1.1rem;
+            font-size: 1.4rem;
             font-weight: 700;
             color: #fff;
-            display: inline-block;
-            padding-left: 5px; 
-            text-shadow: 0 2px 6px rgba(0,0,0,0.9); 
+            margin-bottom: 8px;
+            text-shadow: 0 0 20px var(--neon-primary)80;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            animation: titleGlow 3s ease-in-out infinite;
         }
 
-        .scrolling {
-            animation: marquee 10s linear infinite;
-            padding-left: 100%;
+        @keyframes titleGlow {
+            0%, 100% { text-shadow: 0 0 20px var(--neon-primary)80; }
+            50% { text-shadow: 0 0 30px var(--neon-secondary)80, 0 0 40px var(--neon-primary)60; }
         }
 
-        @keyframes marquee {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(-100%, 0); }
+        .track-artist {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
         }
 
-        .artist-text {
-            font-size: 0.9rem;
-            color: rgba(255,255,255,0.8);
-            font-weight: 300;
-            margin-top: 2px;
-            text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+        /* ===== CONTROLS ===== */
+        .controls-container {
+            width: 100%;
         }
 
-        /* --- Controls --- */
-        .controls-wrapper {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+        .controls-glass {
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
             border-top: 1px solid rgba(255,255,255,0.1);
-            padding-top: 15px;
-            pointer-events: auto; /* Reativa cliques nos botões */
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 
+                0 -10px 40px rgba(0,0,0,0.5),
+                0 0 40px var(--neon-primary)10;
         }
 
+        /* Main controls */
         .main-controls {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 20px;
+            gap: 25px;
+            margin-bottom: 24px;
         }
 
-        .btn {
-            background: rgba(255, 255, 255, 0.05); 
-            border: 1px solid rgba(255,255,255,0.2);
-            color: #fff;
+        .control-btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.7);
             cursor: pointer;
-            transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 4px;
-            backdrop-filter: blur(5px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .btn:hover {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 10px var(--primary-color);
-            color: var(--primary-color);
-            background: rgba(255, 255, 255, 0.1);
-            transform: scale(1.05);
+        .control-btn:hover {
+            background: rgba(255,255,255,0.1);
+            transform: scale(1.1);
         }
 
-        .btn svg {
-            width: 20px;
-            height: 20px;
-            fill: currentColor;
+        .control-btn:active {
+            transform: scale(0.95);
         }
 
-        .btn-large {
-            width: 60px;
-            height: 60px;
-            background: rgba(255, 255, 255, 0.1);
-            border-color: var(--primary-color);
+        .control-btn svg {
+            width: 24px;
+            height: 24px;
         }
 
-        .btn-large svg { width: 28px; height: 28px; }
-        .btn-small { width: 40px; height: 40px; }
+        .play-btn {
+            width: 72px;
+            height: 72px;
+            background: #fff;
+            color: #000;
+            box-shadow: 0 0 30px rgba(255,255,255,0.3);
+        }
 
-        /* Volume */
-        .volume-row {
+        .play-btn:hover {
+            box-shadow: 0 0 40px rgba(255,255,255,0.5);
+        }
+
+        .play-btn.playing {
+            background: linear-gradient(135deg, var(--neon-primary), var(--neon-secondary));
+            color: #fff;
+            animation: playGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes playGlow {
+            0%, 100% { box-shadow: 0 0 30px var(--neon-primary)80; }
+            50% { box-shadow: 0 0 50px var(--neon-secondary)80, 0 0 70px var(--neon-primary)60; }
+        }
+
+        .play-btn svg {
+            width: 30px;
+            height: 30px;
+        }
+
+        /* Volume control */
+        .volume-control {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
-        input[type=range] {
-            flex: 1;
-            -webkit-appearance: none;
-            background: rgba(255,255,255,0.1);
-            height: 4px;
-            outline: none;
-        }
-
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 12px;
-            height: 12px;
-            background: var(--primary-color);
+        .volume-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            color: rgba(255,255,255,0.5);
             cursor: pointer;
-            box-shadow: 0 0 10px var(--primary-color);
-            transition: background 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
         }
 
-        @media (max-width: 380px) {
-            .hud-player { padding: 15px; max-width: 100%; border-left: none; border-right: none; }
-            .track-title { font-size: 1rem; }
+        .volume-btn:hover {
+            color: var(--neon-primary);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .volume-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .volume-slider-container {
+            flex: 1;
+            position: relative;
+            height: 24px;
+            display: flex;
+            align-items: center;
+        }
+
+        .volume-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255,255,255,0.1);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--neon-primary), var(--neon-secondary));
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--neon-primary), 0 0 20px var(--neon-primary);
+            transition: transform 0.2s ease;
+        }
+
+        .volume-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.3);
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--neon-primary), var(--neon-secondary));
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 10px var(--neon-primary);
+        }
+
+        .volume-value {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
+            width: 36px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        /* ===== ACTION BUTTONS ===== */
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            border: none;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+
+        .action-btn.active {
+            background: var(--neon-accent)20;
+            border-color: var(--neon-accent);
+            color: var(--neon-accent);
+        }
+
+        .action-btn svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            text-align: center;
+            padding: 15px 0;
+        }
+
+        .footer p {
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.25);
+            letter-spacing: 0.15em;
+        }
+
+        /* ===== COLOR TRANSITIONS ===== */
+        .album-ring,
+        .spinner,
+        .track-title,
+        .volume-slider::-webkit-slider-thumb,
+        .play-btn.playing {
+            transition: all 1s ease;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-height: 700px) {
+            .album-container {
+                width: 220px;
+                height: 220px;
+            }
+            
+            .track-title {
+                font-size: 1.2rem;
+            }
+            
+            .controls-glass {
+                padding: 20px;
+            }
+        }
+
+        /* ===== REDUCED MOTION ===== */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* ===== SELECTION ===== */
+        ::selection {
+            background: var(--neon-primary);
+            color: #000;
         }
     </style>
 </head>
 <body>
-
-    <div class="hud-player" id="hudPlayer">
+    <!-- Main App -->
+    <div class="app-container">
+        <!-- Header -->
         <header class="header">
-            <div class="brand-title">RÁDIO INDIE NEON</div>
-            <div class="status-badge" id="statusBadge">OFFLINE</div>
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="2"/>
+                        <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/>
+                        <path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/>
+                        <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/>
+                        <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <h1>INDIE NEON</h1>
+                    <span>Rádio Online</span>
+                </div>
+            </div>
+
+            <div class="status-badge" id="statusBadge">
+                <div class="status-dot"></div>
+                <span class="status-text" id="statusText">OFFLINE</span>
+            </div>
         </header>
 
-        <section class="visual-container">
-            <div class="scanlines"></div>
-            <canvas id="vuMeter"></canvas>
-            <img src="https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=80&w=600&auto=format&fit=crop" 
-                 alt="Album Art" 
-                 class="album-art" 
-                 id="albumArt">
-        </section>
-
-        <section class="info-panel">
-            <div class="label">NOW PLAYING</div>
-            <div class="marquee-container" id="marqueeWrapper">
-                <div class="track-title" id="trackName">AGUARDANDO SINAL...</div>
+        <!-- Visualizer Section -->
+        <section class="visualizer-section">
+            <div class="album-container">
+                <div class="album-ring"></div>
+                <div class="album-ring-inner"></div>
+                <canvas id="visualizer-canvas"></canvas>
+                <div class="album-cover" id="albumCover">
+                    <div class="album-placeholder">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 18V5l12-2v13"/>
+                            <circle cx="6" cy="18" r="3"/>
+                            <circle cx="18" cy="16" r="3"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="loading-overlay" id="loadingOverlay">
+                    <div class="spinner"></div>
+                </div>
             </div>
-            <div class="artist-text" id="artistName">SYSTEM READY</div>
-        </section>
 
-        <section class="controls-wrapper">
-            <div class="volume-row">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,255,255,0.5)"><path d="M3,9H7L12,4V20L7,15H3V9Z"/></svg>
-                <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.8">
-            </div>
-            <div class="main-controls">
-                <button class="btn btn-small" id="btnMute">
-                    <svg viewBox="0 0 24 24"><path d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z" /></svg>
-                </button>
-                <button class="btn btn-large" id="btnPlayPause">
-                    <svg id="iconPlay" viewBox="0 0 24 24" style="display: block;"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg>
-                    <svg id="iconPause" viewBox="0 0 24 24" style="display: none;"><path d="M14,19H18V5H14M6,19H10V5H6V19Z" /></svg>
-                </button>
-                <button class="btn btn-small" id="btnStop">
-                    <svg viewBox="0 0 24 24"><path d="M18,18H6V6H18V18Z" /></svg>
-                </button>
+            <div class="track-info">
+                <h2 class="track-title" id="trackTitle">Rádio Indie Neon</h2>
+                <p class="track-artist" id="trackArtist">Aguardando conexão...</p>
             </div>
         </section>
 
-        <audio id="audioPlayer" crossorigin="anonymous" preload="none">
-            <source src="https://citizens-increasingly-lie-kent.trycloudflare.com/stream" type="audio/mpeg">
-        </audio>
+        <!-- Controls -->
+        <div class="controls-container">
+            <div class="controls-glass">
+                <div class="main-controls">
+                    <!-- Stop Button -->
+                    <button class="control-btn" id="btnStop" title="Parar">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="6" y="6" width="12" height="12" rx="2"/>
+                        </svg>
+                    </button>
+
+                    <!-- Play/Pause Button -->
+                    <button class="control-btn play-btn" id="btnPlay" title="Play/Pause">
+                        <svg id="iconPlay" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                        <svg id="iconPause" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
+                            <rect x="6" y="4" width="4" height="16" rx="1"/>
+                            <rect x="14" y="4" width="4" height="16" rx="1"/>
+                        </svg>
+                    </button>
+
+                    <!-- Mute Button -->
+                    <button class="control-btn" id="btnMute" title="Mudo">
+                        <svg id="iconVol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                        </svg>
+                        <svg id="iconMute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                            <line x1="23" y1="9" x2="17" y2="15"/>
+                            <line x1="17" y1="9" x2="23" y2="15"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Volume Control -->
+                <div class="volume-control">
+                    <button class="volume-btn" id="btnVolDown">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                        </svg>
+                    </button>
+                    <div class="volume-slider-container">
+                        <input type="range" class="volume-slider" id="volSlider" min="0" max="1" step="0.01" value="0.85">
+                    </div>
+                    <span class="volume-value" id="volValue">85%</span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="action-btn" id="btnLike" title="Curtir">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                </button>
+                <button class="action-btn" id="btnPlaylist" title="Playlist">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 6H3"/>
+                        <path d="M16 12H3"/>
+                        <path d="M16 18H3"/>
+                        <path d="M21 6v10"/>
+                        <path d="M18 16l3 3 3-3"/>
+                    </svg>
+                </button>
+                <button class="action-btn" id="btnShare" title="Compartilhar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="18" cy="5" r="3"/>
+                        <circle cx="6" cy="12" r="3"/>
+                        <circle cx="18" cy="19" r="3"/>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                    </svg>
+                </button>
+                <button class="action-btn" id="btnEffects" title="Efeitos">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>INDIE NEON RÁDIO © 2025</p>
+        </footer>
     </div>
 
+    <!-- Audio Element -->
+    <audio id="audioPlayer" crossorigin="anonymous" preload="none"></audio>
+
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const audio = document.getElementById('audioPlayer');
-            const btnPlayPause = document.getElementById('btnPlayPause');
-            const btnStop = document.getElementById('btnStop');
-            const btnMute = document.getElementById('btnMute');
-            const volumeSlider = document.getElementById('volumeSlider');
-            const iconPlay = document.getElementById('iconPlay');
-            const iconPause = document.getElementById('iconPause');
-            const albumArt = document.getElementById('albumArt');
-            const trackNameEl = document.getElementById('trackName');
-            const artistNameEl = document.getElementById('artistName');
-            const statusBadge = document.getElementById('statusBadge');
-            const marqueeWrapper = document.getElementById('marqueeWrapper');
+        // ============================================
+        // CONFIGURAÇÕES - EDITE AQUI SEU STREAMING
+        // ============================================
+        const CONFIG = {
+            // URL do seu streaming Icecast/Shoutcast
+            STREAM_URL: 'https://citizens-increasingly-lie-kent.trycloudflare.com/stream',
             
-            // --- Configuração API Last.FM ---
-            const LAST_FM_API_KEY = "73b5fb24854700c462c68a42d7ccae2b";
-            const baseUrl = "https://citizens-increasingly-lie-kent.trycloudflare.com";
-            const jsonUrl = `${baseUrl}/status-json.xsl`;
-
-            // Canvas Variaveis
-            const canvas = document.getElementById('vuMeter');
-            const ctx = canvas.getContext('2d');
+            // URL do status JSON (metadata)
+            STATUS_URL: 'https://citizens-increasingly-lie-kent.trycloudflare.com/status-json.xsl',
             
-            let audioContext, analyser, source;
-            let dataArray;
-            let isPlaying = false;
-            let metadataInterval;
-            let currentTrack = "";
+            // API Key do Last.fm (para buscar capas)
+            LASTFM_KEY: '73b5fb24854700c462c68a42d7ccae2b',
+            
+            // Intervalo de atualização do metadata (ms)
+            META_INTERVAL: 10000,
+            
+            // Cores neon que alternam
+            NEON_COLORS: [
+                { primary: '#00f3ff', secondary: '#bc13fe', accent: '#ff006e' },
+                { primary: '#ff006e', secondary: '#00f3ff', accent: '#bc13fe' },
+                { primary: '#bc13fe', secondary: '#ff006e', accent: '#00f3ff' },
+                { primary: '#39ff14', secondary: '#ff00ff', accent: '#00ffff' },
+                { primary: '#ff9500', secondary: '#00d4ff', accent: '#ff00aa' },
+            ]
+        };
 
-            // --- Inicialização do Áudio Context ---
-            function setupAudioContext() {
-                if (!audioContext) {
-                    try {
-                        const AudioContext = window.AudioContext || window.webkitAudioContext;
-                        audioContext = new AudioContext();
-                        analyser = audioContext.createAnalyser();
-                        analyser.fftSize = 256; 
-                        analyser.smoothingTimeConstant = 0.7;
-                        
-                        source = audioContext.createMediaElementSource(audio);
-                        source.connect(analyser);
-                        analyser.connect(audioContext.destination);
-                        
-                        const bufferLength = analyser.frequencyBinCount;
-                        dataArray = new Uint8Array(bufferLength);
-                        
-                        drawModernVisualizer();
-                    } catch (e) {
-                        console.warn("Audio API error, switching to simulation.");
-                        drawModernVisualizer(true);
-                    }
-                } else if (audioContext.state === 'suspended') {
-                    audioContext.resume();
+        // ============================================
+        // ESTADO GLOBAL
+        // ============================================
+        const state = {
+            isPlaying: false,
+            isMuted: false,
+            volume: 0.85,
+            colorIndex: 0,
+            lastTitle: '',
+            audioContext: null,
+            analyser: null,
+            dataArray: null,
+            liked: false
+        };
+
+        // ============================================
+        // ELEMENTOS DOM
+        // ============================================
+        const elements = {
+            audio: document.getElementById('audioPlayer'),
+            btnPlay: document.getElementById('btnPlay'),
+            btnStop: document.getElementById('btnStop'),
+            btnMute: document.getElementById('btnMute'),
+            btnVolDown: document.getElementById('btnVolDown'),
+            btnLike: document.getElementById('btnLike'),
+            btnShare: document.getElementById('btnShare'),
+            iconPlay: document.getElementById('iconPlay'),
+            iconPause: document.getElementById('iconPause'),
+            iconVol: document.getElementById('iconVol'),
+            iconMute: document.getElementById('iconMute'),
+            volSlider: document.getElementById('volSlider'),
+            volValue: document.getElementById('volValue'),
+            statusBadge: document.getElementById('statusBadge'),
+            statusText: document.getElementById('statusText'),
+            trackTitle: document.getElementById('trackTitle'),
+            trackArtist: document.getElementById('trackArtist'),
+            albumCover: document.getElementById('albumCover'),
+            loadingOverlay: document.getElementById('loadingOverlay'),
+            visualizerCanvas: document.getElementById('visualizer-canvas')
+        };
+
+        // ============================================
+        // FUNÇÕES UTILITÁRIAS
+        // ============================================
+        function hexToRgba(hex, alpha) {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+
+        function updateColors() {
+            const colors = CONFIG.NEON_COLORS[state.colorIndex];
+            document.documentElement.style.setProperty('--neon-primary', colors.primary);
+            document.documentElement.style.setProperty('--neon-secondary', colors.secondary);
+            document.documentElement.style.setProperty('--neon-accent', colors.accent);
+        }
+
+        // ============================================
+        // CONTROLES DO PLAYER
+        // ============================================
+        async function togglePlay() {
+            if (state.isPlaying) {
+                elements.audio.pause();
+                state.isPlaying = false;
+                updatePlayButton();
+            } else {
+                elements.loadingOverlay.classList.add('active');
+                
+                try {
+                    elements.audio.src = CONFIG.STREAM_URL;
+                    await elements.audio.play();
+                    
+                    state.isPlaying = true;
+                    initAudioContext();
+                    updatePlayButton();
+                } catch (error) {
+                    console.error('Erro ao tocar:', error);
+                    alert('Erro ao conectar ao stream. Verifique a URL.');
+                } finally {
+                    elements.loadingOverlay.classList.remove('active');
                 }
             }
+            updateStatus();
+        }
 
-            // --- VISUALIZADOR MODERNO ESPELHADO ---
-            function drawModernVisualizer(simulation = false) {
-                canvas.width = canvas.parentElement.offsetWidth;
-                canvas.height = canvas.parentElement.offsetHeight;
+        function stop() {
+            elements.audio.pause();
+            elements.audio.currentTime = 0;
+            elements.audio.src = '';
+            state.isPlaying = false;
+            updatePlayButton();
+            updateStatus();
+        }
 
-                function renderFrame() {
-                    requestAnimationFrame(renderFrame);
-                    if(!isPlaying) {
-                        ctx.clearRect(0, 0, canvas.width, canvas.height);
-                        return;
-                    }
+        function updatePlayButton() {
+            if (state.isPlaying) {
+                elements.btnPlay.classList.add('playing');
+                elements.iconPlay.style.display = 'none';
+                elements.iconPause.style.display = 'block';
+            } else {
+                elements.btnPlay.classList.remove('playing');
+                elements.iconPlay.style.display = 'block';
+                elements.iconPause.style.display = 'none';
+            }
+        }
 
-                    if (simulation) {
-                         dataArray = new Uint8Array(128).map(() => Math.random() * 255);
+        function updateStatus() {
+            if (state.isPlaying) {
+                elements.statusBadge.classList.add('live');
+                elements.statusText.textContent = 'ON AIR';
+            } else {
+                elements.statusBadge.classList.remove('live');
+                elements.statusText.textContent = 'OFFLINE';
+            }
+        }
+
+        function toggleMute() {
+            state.isMuted = !state.isMuted;
+            elements.audio.muted = state.isMuted;
+            
+            if (state.isMuted) {
+                elements.iconVol.style.display = 'none';
+                elements.iconMute.style.display = 'block';
+            } else {
+                elements.iconVol.style.display = 'block';
+                elements.iconMute.style.display = 'none';
+            }
+        }
+
+        function setVolume(value) {
+            state.volume = parseFloat(value);
+            elements.audio.volume = state.volume;
+            elements.volSlider.value = state.volume;
+            elements.volValue.textContent = Math.round(state.volume * 100) + '%';
+            
+            // Atualizar cor do slider
+            const colors = CONFIG.NEON_COLORS[state.colorIndex];
+            elements.volSlider.style.background = `linear-gradient(to right, ${colors.primary} 0%, ${colors.secondary} ${state.volume * 100}%, rgba(255,255,255,0.1) ${state.volume * 100}%, rgba(255,255,255,0.1) 100%)`;
+        }
+
+        // ============================================
+        // AUDIO CONTEXT E ANALYSER
+        // ============================================
+        function initAudioContext() {
+            if (state.audioContext) return;
+            
+            try {
+                state.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                state.analyser = state.audioContext.createAnalyser();
+                state.analyser.fftSize = 128;
+                state.analyser.smoothingTimeConstant = 0.8;
+                
+                const source = state.audioContext.createMediaElementSource(elements.audio);
+                source.connect(state.analyser);
+                state.analyser.connect(state.audioContext.destination);
+                
+                state.dataArray = new Uint8Array(state.analyser.frequencyBinCount);
+            } catch (error) {
+                console.error('Erro ao inicializar AudioContext:', error);
+            }
+        }
+
+        // ============================================
+        // VISUALIZADOR DE ÁUDIO CIRCULAR
+        // ============================================
+        class CircularVisualizer {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.time = 0;
+                this.resize();
+                
+                window.addEventListener('resize', () => this.resize());
+                this.animate();
+            }
+
+            resize() {
+                const rect = this.canvas.parentElement.getBoundingClientRect();
+                this.canvas.width = rect.width * 2;
+                this.canvas.height = rect.height * 2;
+                this.ctx.scale(2, 2);
+                this.width = rect.width;
+                this.height = rect.height;
+            }
+
+            animate() {
+                const colors = CONFIG.NEON_COLORS[state.colorIndex];
+                const centerX = this.width / 2;
+                const centerY = this.height / 2;
+                const radius = Math.min(centerX, centerY) - 50;
+
+                this.ctx.clearRect(0, 0, this.width, this.height);
+                this.time += 0.03;
+
+                // Círculos concêntricos pulsantes
+                for (let i = 0; i < 4; i++) {
+                    const pulseRadius = radius * (0.5 + i * 0.12) + Math.sin(this.time + i * 0.5) * 8;
+                    const gradient = this.ctx.createRadialGradient(
+                        centerX, centerY, pulseRadius * 0.7,
+                        centerX, centerY, pulseRadius
+                    );
+                    gradient.addColorStop(0, 'transparent');
+                    gradient.addColorStop(0.5, hexToRgba(colors.primary, 0.1));
+                    gradient.addColorStop(1, 'transparent');
+
+                    this.ctx.beginPath();
+                    this.ctx.arc(centerX, centerY, pulseRadius, 0, Math.PI * 2);
+                    this.ctx.strokeStyle = gradient;
+                    this.ctx.lineWidth = 1.5;
+                    this.ctx.stroke();
+                }
+
+                // Barras circulares
+                const barCount = 72;
+                const barWidth = (Math.PI * 2 * radius) / barCount * 0.6;
+
+                for (let i = 0; i < barCount; i++) {
+                    const angle = (i / barCount) * Math.PI * 2 - Math.PI / 2;
+                    
+                    let barHeight = 8;
+                    
+                    // Se estiver tocando e tiver dados do analyser
+                    if (state.isPlaying && state.dataArray) {
+                        const dataIndex = Math.floor((i / barCount) * state.dataArray.length);
+                        const value = state.dataArray[dataIndex] || 0;
+                        barHeight = 8 + (value / 255) * 45;
                     } else {
-                        try {
-                            analyser.getByteFrequencyData(dataArray);
-                            let sum = dataArray.reduce((a, b) => a + b, 0);
-                            if (sum === 0 && audio.currentTime > 1) {
-                                for(let k=0; k<dataArray.length; k++) dataArray[k] = Math.random() * 100;
-                            }
-                        } catch(e) {}
+                        // Animação idle
+                        barHeight = 8 + Math.sin(this.time * 2 + i * 0.3) * 6;
                     }
 
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    const x1 = centerX + Math.cos(angle) * radius;
+                    const y1 = centerY + Math.sin(angle) * radius;
+                    const x2 = centerX + Math.cos(angle) * (radius + barHeight);
+                    const y2 = centerY + Math.sin(angle) * (radius + barHeight);
 
-                    const bars = 40;
-                    const barWidth = (canvas.width / 2) / bars; 
-                    const centerX = canvas.width / 2;
-                    const style = getComputedStyle(document.body);
-                    const currentColor = style.getPropertyValue('--primary-color').trim();
+                    const gradient = this.ctx.createLinearGradient(x1, y1, x2, y2);
+                    gradient.addColorStop(0, colors.primary);
+                    gradient.addColorStop(0.5, colors.secondary);
+                    gradient.addColorStop(1, colors.accent);
 
-                    for (let i = 0; i < bars; i++) {
-                        const dataIndex = Math.floor(i * (dataArray.length / bars) * 0.8); 
-                        const value = dataArray[dataIndex];
-                        const barHeight = (value / 255) * (canvas.height * 0.6);
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x1, y1);
+                    this.ctx.lineTo(x2, y2);
+                    this.ctx.strokeStyle = gradient;
+                    this.ctx.lineWidth = barWidth;
+                    this.ctx.lineCap = 'round';
+                    this.ctx.stroke();
 
-                        const gradient = ctx.createLinearGradient(0, canvas.height, 0, canvas.height - barHeight);
-                        gradient.addColorStop(0, currentColor);
-                        gradient.addColorStop(1, "rgba(255, 255, 255, 0.1)");
-
-                        ctx.fillStyle = gradient;
-
-                        ctx.fillRect(centerX + (i * barWidth), canvas.height - barHeight, barWidth - 1, barHeight);
-                        ctx.fillRect(centerX - ((i + 1) * barWidth), canvas.height - barHeight, barWidth - 1, barHeight);
-                    }
+                    // Glow nas barras
+                    this.ctx.shadowColor = colors.primary;
+                    this.ctx.shadowBlur = 8;
+                    this.ctx.stroke();
+                    this.ctx.shadowBlur = 0;
                 }
-                renderFrame();
-            }
 
-            // --- Lógica do Player ---
-            btnPlayPause.addEventListener('click', togglePlay);
+                // Círculo central glow
+                const centerGradient = this.ctx.createRadialGradient(
+                    centerX, centerY, 0,
+                    centerX, centerY, radius * 0.4
+                );
+                centerGradient.addColorStop(0, hexToRgba(colors.primary, 0.15));
+                centerGradient.addColorStop(1, 'transparent');
+
+                this.ctx.beginPath();
+                this.ctx.arc(centerX, centerY, radius * 0.4, 0, Math.PI * 2);
+                this.ctx.fillStyle = centerGradient;
+                this.ctx.fill();
+
+                // Atualizar dados do analyser
+                if (state.analyser && state.dataArray) {
+                    state.analyser.getByteFrequencyData(state.dataArray);
+                }
+
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+
+        // ============================================
+        // METADATA, CAPAS E BACKGROUND
+        // ============================================
+        async function fetchMetadata() {
+            try {
+                const response = await fetch(CONFIG.STATUS_URL, { cache: 'no-store' });
+                const data = await response.json();
+                
+                let title = '';
+                const src = data.icestats?.source;
+                
+                if (Array.isArray(src)) {
+                    const active = src.find(s => s.title) || src[0];
+                    title = active?.title;
+                } else if (src?.title) {
+                    title = src.title;
+                }
+
+                if (title && title !== state.lastTitle) {
+                    state.lastTitle = title;
+                    updateTrackInfo(title);
+                }
+            } catch (error) {
+                console.error('Erro ao buscar metadata:', error);
+            }
+        }
+
+        function updateTrackInfo(fullTitle) {
+            let artist = '';
+            let title = fullTitle;
             
-            btnStop.addEventListener('click', () => {
-                audio.pause();
-                audio.currentTime = 0;
-                isPlaying = false;
-                updateUI();
-                updateStatus("OFFLINE");
-                stopMetadata();
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-            });
+            if (fullTitle.includes(' - ')) {
+                const parts = fullTitle.split(' - ');
+                artist = parts.shift().trim();
+                title = parts.join(' - ').trim();
+            }
 
-            function togglePlay() {
-                setupAudioContext();
-                if (isPlaying) {
-                    audio.pause();
-                } else {
-                    audio.play().catch(err => {
-                        trackNameEl.innerText = "ERRO CONEXÃO";
-                        artistNameEl.innerText = "VERIFIQUE REDE";
-                    });
+            elements.trackTitle.textContent = title || 'Desconhecido';
+            elements.trackArtist.textContent = artist || 'Artista Desconhecido';
+            document.title = `${title} | Indie Neon Radio`;
+
+            // --- ALTERAÇÃO: BACKGROUND DINÂMICO ---
+            // Usa o título completo como semente para gerar um wallpaper único para a música
+            const seed = encodeURIComponent(fullTitle);
+            const bgUrl = `https://picsum.photos/seed/${seed}/1920/1080.jpg`;
+            document.body.style.backgroundImage = `url('${bgUrl}')`;
+
+            // Buscar capa
+            if (artist && title) {
+                fetchAlbumCover(artist, title);
+            }
+        }
+
+        async function fetchAlbumCover(artist, track) {
+            try {
+                const url = `https://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${CONFIG.LASTFM_KEY}&artist=${encodeURIComponent(artist)}&track=${encodeURIComponent(track)}&format=json`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                const image = data?.track?.album?.image?.find(img => img.size === 'extralarge')?.['#text'];
+                
+                if (image) {
+                    elements.albumCover.innerHTML = `<img src="${image}" alt="Album Cover" onerror="this.style.display='none'">`;
                 }
+            } catch (error) {
+                console.error('Erro ao buscar capa:', error);
             }
+        }
 
-            audio.addEventListener('play', () => {
-                isPlaying = true;
-                updateUI();
-                updateStatus("AO VIVO");
-                startMetadata();
-            });
+        // ============================================
+        // EVENT LISTENERS
+        // ============================================
+        elements.btnPlay.addEventListener('click', togglePlay);
+        elements.btnStop.addEventListener('click', stop);
+        elements.btnMute.addEventListener('click', toggleMute);
 
-            audio.addEventListener('pause', () => {
-                isPlaying = false;
-                updateUI();
-                updateStatus("PAUSED");
-                stopMetadata();
-            });
-
-            volumeSlider.addEventListener('input', (e) => { audio.volume = e.target.value; audio.dataset.prevVol = audio.volume; });
-            btnMute.addEventListener('click', () => {
-                if(audio.volume > 0) { audio.dataset.prevVol = audio.volume; audio.volume = 0; volumeSlider.value = 0; } 
-                else { audio.volume = audio.dataset.prevVol || 0.8; volumeSlider.value = audio.volume; }
-            });
-
-            function updateUI() {
-                if (isPlaying) {
-                    iconPlay.style.display = 'none';
-                    iconPause.style.display = 'block';
-                    btnPlayPause.style.boxShadow = "0 0 15px var(--primary-color)";
-                } else {
-                    iconPlay.style.display = 'block';
-                    iconPause.style.display = 'none';
-                    btnPlayPause.style.boxShadow = "none";
-                }
-            }
-
-            function updateStatus(text) {
-                statusBadge.innerText = text;
-                if(text === "AO VIVO") statusBadge.classList.add('live');
-                else statusBadge.classList.remove('live');
-            }
-
-            function checkMarquee() {
-                trackNameEl.classList.remove('scrolling');
-                if (trackNameEl.scrollWidth > marqueeWrapper.clientWidth) {
-                    trackNameEl.classList.add('scrolling');
-                }
-            }
-
-            // --- Metadados e Capas ---
-            function startMetadata() {
-                fetchMetadata();
-                metadataInterval = setInterval(fetchMetadata, 8000);
-            }
-
-            function stopMetadata() {
-                clearInterval(metadataInterval);
-            }
-
-            async function fetchMetadata() {
-                try {
-                    const response = await fetch(jsonUrl);
-                    if (!response.ok) throw new Error("Erro");
-                    const data = await response.json();
-                    const sources = data.icestats.source;
-                    let title = "";
-                    if (Array.isArray(sources)) {
-                        const active = sources.find(s => s.title);
-                        title = active ? active.title : "Desconhecido";
-                    } else if (sources && sources.title) {
-                        title = sources.title;
-                    }
-                    if (title && title !== currentTrack) {
-                        currentTrack = title;
-                        updateTrackDisplay(title);
-                    }
-                } catch (error) {}
-            }
-
-            async function updateTrackDisplay(fullTitle) {
-                let artist = "Desconhecido";
-                let track = fullTitle;
-                if (fullTitle.includes(" - ")) {
-                    const parts = fullTitle.split(" - ");
-                    artist = parts[0].trim();
-                    track = parts.slice(1).join(" - ").trim();
-                }
-                trackNameEl.innerText = track;
-                artistNameEl.innerText = artist;
-                checkMarquee();
-
-                // --- MUDANÇA DE WALLPAPER (BASEADO NO TÍTULO) ---
-                const wallpaperUrl = `https://picsum.photos/seed/${encodeURIComponent(track)}/1920/1080`;
-                document.body.style.backgroundImage = `url('${wallpaperUrl}')`;
-
-
-                // --- MUDANÇA DE CAPA DO PLAYER (LAST.FM) ---
-                albumArt.classList.add('fade-out');
-                const artUrl = await fetchAlbumArt(artist, track);
-                const fallbackUrl = `https://picsum.photos/seed/${encodeURIComponent(track)}/500/500`;
-                
-                setTimeout(() => {
-                    const finalUrl = artUrl || fallbackUrl;
-                    albumArt.src = finalUrl;
-
-                    albumArt.onload = () => albumArt.classList.remove('fade-out');
-                    albumArt.onerror = () => { 
-                        albumArt.src = fallbackUrl; 
-                        albumArt.classList.remove('fade-out'); 
-                    };
-                }, 800);
-            }
-
-            async function fetchAlbumArt(artist, track) {
-                try {
-                    const url = `https://ws.audioscrobbler.com/2.0/?method=track.getinfo&api_key=${LAST_FM_API_KEY}&artist=${encodeURIComponent(artist)}&track=${encodeURIComponent(track)}&format=json`;
-                    const response = await fetch(url);
-                    const data = await response.json();
-                    if (data.track && data.track.album && data.track.album.image) {
-                        const img = data.track.album.image.find(i => i.size === 'extralarge');
-                        if (img && img['#text']) return img['#text'];
-                    }
-                    return null;
-                } catch (e) { return null; }
-            }
-
-            window.addEventListener('resize', checkMarquee);
-
-            // --- LÓGICA DE ARRASTAR (SLIDABLE UP AND DOWN) ---
-            const player = document.getElementById('hudPlayer');
-            let isDragging = false;
-            let startY, startTop;
-
-            // Função para iniciar o arrasto
-            function dragStart(e) {
-                // Verifica se o clique foi nos controles (slider ou botões)
-                if (e.target.closest('button') || e.target.closest('input')) return;
-
-                isDragging = true;
-                // Obtém posição Y inicial (mouse ou toque)
-                startY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
-                
-                // Obtém a posição atual 'top' do elemento
-                const rect = player.getBoundingClientRect();
-                startTop = rect.top;
-                
-                // Remove transição para resposta imediata ao movimento
-                player.style.transition = 'none';
-            }
-
-            // Função durante o movimento
-            function dragMove(e) {
-                if (!isDragging) return;
-                
-                e.preventDefault(); // Impede rolagem da tela no mobile
-
-                const currentY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
-                const deltaY = currentY - startY;
-                
-                let newTop = startTop + deltaY;
-
-                // Limites da tela (Clamping)
-                const maxTop = window.innerHeight - player.offsetHeight;
-                if (newTop < 0) newTop = 0;
-                if (newTop > maxTop) newTop = maxTop;
-
-                // Aplica nova posição. Mantém centralizado horizontalmente (translateX -50%)
-                player.style.top = `${newTop}px`;
-                player.style.transform = `translate(-50%, 0)`;
-            }
-
-            // Função ao soltar
-            function dragEnd() {
-                if (!isDragging) return;
-                isDragging = false;
-                // Restaura a transição suave para outras animações CSS
-                player.style.transition = 'all 0.5s ease';
-            }
-
-            // Event Listeners para Mouse
-            player.addEventListener('mousedown', dragStart);
-            window.addEventListener('mousemove', dragMove);
-            window.addEventListener('mouseup', dragEnd);
-
-            // Event Listeners para Touch (Mobile)
-            player.addEventListener('touchstart', dragStart, {passive: false});
-            window.addEventListener('touchmove', dragMove, {passive: false});
-            window.addEventListener('touchend', dragEnd);
-
+        elements.volSlider.addEventListener('input', (e) => {
+            setVolume(e.target.value);
         });
+
+        elements.btnVolDown.addEventListener('click', () => {
+            const newVol = Math.max(0, state.volume - 0.1);
+            setVolume(newVol);
+        });
+
+        elements.btnLike.addEventListener('click', () => {
+            state.liked = !state.liked;
+            elements.btnLike.classList.toggle('active', state.liked);
+        });
+
+        elements.btnShare.addEventListener('click', () => {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Rádio Indie Neon',
+                    text: `Ouça ${elements.trackTitle.textContent} na Rádio Indie Neon!`,
+                    url: window.location.href
+                });
+            } else {
+                // Copiar link para clipboard
+                navigator.clipboard.writeText(window.location.href);
+                alert('Link copiado para a área de transferência!');
+            }
+        });
+
+        // ============================================
+        // INICIALIZAÇÃO
+        // ============================================
+        function init() {
+            // Configurar volume inicial
+            setVolume(state.volume);
+            
+            // Define um background inicial padrão antes da primeira música
+            document.body.style.backgroundImage = `url('https://picsum.photos/seed/indie_neon_start/1920/1080.jpg')`;
+            
+            // Iniciar visualizador
+            new CircularVisualizer(elements.visualizerCanvas);
+            
+            // Iniciar alternância de cores
+            setInterval(() => {
+                state.colorIndex = (state.colorIndex + 1) % CONFIG.NEON_COLORS.length;
+                updateColors();
+            }, 5000);
+            
+            // Buscar metadata periodicamente
+            fetchMetadata();
+            setInterval(fetchMetadata, CONFIG.META_INTERVAL);
+            
+            // Eventos do áudio
+            elements.audio.addEventListener('error', (e) => {
+                console.error('Erro no áudio:', e);
+                state.isPlaying = false;
+                updatePlayButton();
+                updateStatus();
+            });
+            
+            console.log('🎵 Rádio Indie Neon iniciada!');
+            console.log('📻 Stream:', CONFIG.STREAM_URL);
+        }
+
+        // Iniciar quando DOM estiver pronto
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
     </script>
 </body>
 </html>
